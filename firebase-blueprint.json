@@ -1,0 +1,117 @@
+{
+  "entities": {
+    "Fabric": {
+      "title": "Fabric",
+      "description": "Master list of fabrics available for dyeing.",
+      "type": "object",
+      "properties": {
+        "name": {
+          "type": "string",
+          "description": "The name of the fabric."
+        },
+        "itemNumber": {
+          "type": "string",
+          "description": "The unique item number for the fabric."
+        },
+        "availableColors": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          },
+          "description": "List of colors available for this fabric."
+        },
+        "createdAt": {
+          "type": "string",
+          "format": "date-time",
+          "description": "Timestamp when the fabric was added."
+        },
+        "updatedAt": {
+          "type": "string",
+          "format": "date-time",
+          "description": "Timestamp when the fabric was last updated."
+        }
+      },
+      "required": ["name", "itemNumber"]
+    },
+    "DyeingPlan": {
+      "title": "Dyeing Plan",
+      "description": "A specific dyeing plan for a fabric and color.",
+      "type": "object",
+      "properties": {
+        "contractNumber": {
+          "type": "string",
+          "description": "The unique contract number for this plan."
+        },
+        "fabricId": {
+          "type": "string",
+          "description": "Reference to the Fabric entity."
+        },
+        "fabricName": {
+          "type": "string",
+          "description": "Denormalized fabric name for easy display."
+        },
+        "fabricItemNumber": {
+          "type": "string",
+          "description": "Denormalized fabric item number."
+        },
+        "color": {
+          "type": "string",
+          "description": "The color to be dyed."
+        },
+        "colorRequirements": {
+          "type": "string",
+          "description": "Specific color requirements or notes."
+        },
+        "quantity": {
+          "type": "number",
+          "description": "Quantity of fabric to be dyed."
+        },
+        "width": {
+          "type": "string",
+          "description": "Width of the fabric."
+        },
+        "weight": {
+          "type": "string",
+          "description": "Weight of the fabric."
+        },
+        "time": {
+          "type": "string",
+          "description": "Time scheduled for the dyeing process."
+        },
+        "productNumber": {
+          "type": "string",
+          "description": "Internal product number."
+        },
+        "notes": {
+          "type": "string",
+          "description": "Additional notes for the dyeing plan."
+        },
+        "createdBy": {
+          "type": "string",
+          "description": "UID of the user who created the plan."
+        },
+        "createdAt": {
+          "type": "string",
+          "format": "date-time",
+          "description": "Timestamp when the plan was created."
+        },
+        "updatedAt": {
+          "type": "string",
+          "format": "date-time",
+          "description": "Timestamp when the plan was last updated."
+        }
+      },
+      "required": ["contractNumber", "fabricId", "color"]
+    }
+  },
+  "firestore": {
+    "/fabrics": {
+      "schema": "Fabric",
+      "description": "Collection of master fabrics."
+    },
+    "/dyeingPlans": {
+      "schema": "DyeingPlan",
+      "description": "Collection of dyeing plans."
+    }
+  }
+}
