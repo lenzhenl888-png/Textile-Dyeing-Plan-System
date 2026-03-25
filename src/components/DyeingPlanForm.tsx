@@ -1,9 +1,11 @@
 import React, { useState, useEffect } from 'react';
 import { useNavigate, useParams } from 'react-router-dom';
-import { Save, ArrowLeft, AlertCircle, Plus, Trash2 } from 'lucide-react';
+import { Save, ArrowLeft, AlertCircle, Plus, Trash2, Eraser } from 'lucide-react';
 import { storage, DyeingPlan, FabricDetail, ColorRow } from '../services/storage';
 import { cn } from '../lib/utils';
 import { v4 as uuidv4 } from 'uuid';
+
+const DRAFT_KEY = 'dyeing_plan_form_draft';
 
 const INITIAL_FABRICS: FabricDetail[] = [
   { type: 'main', itemNumber: '', width: '', weight: '', productName: '' },
@@ -27,6 +29,7 @@ export default function DyeingPlanForm({ readOnly = false }: { readOnly?: boolea
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const [showClearConfirm, setShowClearConfirm] = useState(false);
 
   const [formData, setFormData] = useState<Partial<DyeingPlan>>({
     customer: '',
@@ -41,26 +44,73 @@ export default function DyeingPlanForm({ readOnly = false }: { readOnly?: boolea
     notes: '颜色对样.色牢度4级.手感按样.成品后不能有细皱纹.直条纹.布面干净注意污渍.缩水率3%以内坯布因水洗可按水洗后门幅做 .一定不能有折横.手感同样.',
   });
 
+  // Load data on mount
   useEffect(() => {
     const loadData = async () => {
+      const draftKey = id ? `${DRAFT_KEY}_${id}` : DRAFT_KEY;
+      const draft = localStorage.getItem(draftKey);
+
       if (id) {
         const plan = storage.getPlan(id);
         if (plan) {
-          setFormData({
-            ...plan,
-            process: plan.process || '',
-            rows: plan.rows?.length ? plan.rows.map(r => ({
-              ...r,
-              colorCode: r.colorCode || '',
-              notes: r.notes || ''
-            })) : [INITIAL_ROW()]
-          });
+          if (draft) {
+            try {
+              setFormData(JSON.parse(draft));
+            } catch (e) {
+              setFormData(plan);
+            }
+          } else {
+            setFormData(plan);
+          }
+        }
+      } else {
+        // Check for draft for new plans
+        if (draft) {
+          try {
+            const parsedDraft = JSON.parse(draft);
+            // Only use draft if it doesn't have an ID (it's a new plan draft)
+            if (!parsedDraft.id) {
+              setFormData(parsedDraft);
+            }
+          } catch (e) {
+            console.error("Failed to parse draft", e);
+          }
         }
       }
       setLoading(false);
     };
     loadData();
   }, [id]);
+
+  // Save draft whenever formData changes
+  useEffect(() => {
+    if (!loading && !readOnly) {
+      const draftKey = id ? `${DRAFT_KEY}_${id}` : DRAFT_KEY;
+      localStorage.setItem(draftKey, JSON.stringify(formData));
+    }
+  }, [formData, id, loading, readOnly]);
+
+  const handleClearAll = () => {
+    const resetData = {
+      customer: '',
+      styleNumber: '',
+      contractNumber: '',
+      date: new Date().toISOString().split('T')[0],
+      deliveryDate: '',
+      process: '',
+      fabrics: INITIAL_FABRICS.map(f => ({ ...f })),
+      rows: [INITIAL_ROW()],
+      unit: '公斤' as const,
+      notes: '颜色对样.色牢度4级.手感按样.成品后不能有细皱纹.直条纹.布面干净注意污渍.缩水率3%以内坯布因水洗可按水洗后门幅做 .一定不能有折横.手感同样.',
+    };
+    setFormData(resetData);
+    
+    // Clear draft
+    const draftKey = id ? `${DRAFT_KEY}_${id}` : DRAFT_KEY;
+    localStorage.removeItem(draftKey);
+    
+    setShowClearConfirm(false);
+  };
 
   const handleFabricChange = (index: number, field: keyof FabricDetail, value: string) => {
     const newFabrics = [...(formData.fabrics || [])];
@@ -128,6 +178,8 @@ export default function DyeingPlanForm({ readOnly = false }: { readOnly?: boolea
 
     try {
       storage.savePlan(formData);
+      const draftKey = id ? `${DRAFT_KEY}_${id}` : DRAFT_KEY;
+      localStorage.removeItem(draftKey);
       navigate('/');
     } catch (err) {
       console.error("Error saving plan:", err);
@@ -154,6 +206,38 @@ export default function DyeingPlanForm({ readOnly = false }: { readOnly?: boolea
             <p className="text-sm text-gray-500 mt-1">根据工厂生产需求填写详细信息。</p>
           </div>
         </div>
+        {!readOnly && (
+          <div className="flex items-center gap-2">
+            {showClearConfirm ? (
+              <div className="flex items-center gap-2 animate-in fade-in zoom-in-95 duration-200">
+                <span className="text-xs text-red-600 font-bold">确定清除所有内容？</span>
+                <button
+                  type="button"
+                  onClick={handleClearAll}
+                  className="px-3 py-1.5 text-xs font-bold text-white bg-red-600 rounded-lg hover:bg-red-700 transition-all shadow-sm"
+                >
+                  确认
+                </button>
+                <button
+                  type="button"
+                  onClick={() => setShowClearConfirm(false)}
+                  className="px-3 py-1.5 text-xs font-bold text-gray-600 bg-gray-100 rounded-lg hover:bg-gray-200 transition-all"
+                >
+                  取消
+                </button>
+              </div>
+            ) : (
+              <button
+                type="button"
+                onClick={() => setShowClearConfirm(true)}
+                className="flex items-center gap-2 px-4 py-2 text-sm font-bold text-red-600 bg-red-50 hover:bg-red-100 rounded-lg transition-all border border-red-100"
+              >
+                <Eraser className="w-4 h-4" />
+                一键清除
+              </button>
+            )}
+          </div>
+        )}
       </div>
 
       {error && (

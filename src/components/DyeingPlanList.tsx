@@ -12,6 +12,8 @@ export default function DyeingPlanList() {
   const navigate = useNavigate();
   const [plans, setPlans] = useState<DyeingPlan[]>([]);
   const [searchTerm, setSearchTerm] = useState('');
+  const [contractSearchTerm, setContractSearchTerm] = useState('');
+  const [selectedMonth, setSelectedMonth] = useState<string>('all');
   const [loading, setLoading] = useState(true);
   const pdfRef = useRef<HTMLDivElement>(null);
   const [activePdfPlan, setActivePdfPlan] = useState<DyeingPlan | null>(null);
@@ -32,10 +34,35 @@ export default function DyeingPlanList() {
     setDeleteConfirmId(null);
   };
 
-  const filteredPlans = plans.filter(plan =>
-    plan.customer?.toLowerCase().includes(searchTerm.toLowerCase()) ||
-    plan.styleNumber?.toLowerCase().includes(searchTerm.toLowerCase())
-  );
+  // Get unique months from plans for the filter
+  const availableMonths = (Array.from(new Set(plans.map(plan => {
+    if (!plan.date) return null;
+    const date = new Date(plan.date);
+    if (isNaN(date.getTime())) return null;
+    return `${date.getFullYear()}-${String(date.getMonth() + 1).padStart(2, '0')}`;
+  }).filter(Boolean))) as string[]).sort((a, b) => b.localeCompare(a));
+
+  const filteredPlans = plans.filter(plan => {
+    const matchesSearch = plan.customer?.toLowerCase().includes(searchTerm.toLowerCase()) ||
+      plan.styleNumber?.toLowerCase().includes(searchTerm.toLowerCase());
+    
+    const matchesContract = plan.contractNumber?.toLowerCase().includes(contractSearchTerm.toLowerCase());
+    
+    let matchesMonth = true;
+    if (selectedMonth !== 'all' && plan.date) {
+      const planDate = new Date(plan.date);
+      if (!isNaN(planDate.getTime())) {
+        const planMonth = `${planDate.getFullYear()}-${String(planDate.getMonth() + 1).padStart(2, '0')}`;
+        matchesMonth = planMonth === selectedMonth;
+      } else {
+        matchesMonth = false;
+      }
+    } else if (selectedMonth !== 'all') {
+      matchesMonth = false;
+    }
+
+    return matchesSearch && matchesContract && matchesMonth;
+  });
 
   const groupedPlans = filteredPlans.reduce((acc, plan) => {
     const customer = plan.customer || '未命名客户';
@@ -85,15 +112,45 @@ export default function DyeingPlanList() {
           <h2 className="text-2xl font-bold text-gray-900">臻林面料计划单</h2>
           <p className="text-sm text-gray-500 mt-1">管理您的生产计划和导出 PDF。</p>
         </div>
-        <div className="relative max-w-sm w-full">
-          <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400" />
-          <input
-            type="text"
-            placeholder="搜索客户或款号..."
-            value={searchTerm}
-            onChange={(e) => setSearchTerm(e.target.value)}
-            className="w-full pl-10 pr-4 py-2 bg-white border border-gray-200 rounded-lg focus:ring-2 focus:ring-indigo-500 outline-none transition-all shadow-sm"
-          />
+        <div className="flex flex-col lg:flex-row items-center gap-3 w-full max-w-4xl">
+          <div className="relative flex-1 w-full">
+            <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400" />
+            <input
+              type="text"
+              placeholder="搜索客户或款号..."
+              value={searchTerm}
+              onChange={(e) => setSearchTerm(e.target.value)}
+              className="w-full pl-10 pr-4 py-2 bg-white border border-gray-200 rounded-lg focus:ring-2 focus:ring-indigo-500 outline-none transition-all shadow-sm"
+            />
+          </div>
+          <div className="relative flex-1 w-full">
+            <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400" />
+            <input
+              type="text"
+              placeholder="搜索合同号..."
+              value={contractSearchTerm}
+              onChange={(e) => setContractSearchTerm(e.target.value)}
+              className="w-full pl-10 pr-4 py-2 bg-white border border-gray-200 rounded-lg focus:ring-2 focus:ring-indigo-500 outline-none transition-all shadow-sm"
+            />
+          </div>
+          <div className="relative w-full lg:w-48">
+            <Calendar className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400" />
+            <select
+              value={selectedMonth}
+              onChange={(e) => setSelectedMonth(e.target.value)}
+              className="w-full pl-10 pr-4 py-2 bg-white border border-gray-200 rounded-lg focus:ring-2 focus:ring-indigo-500 outline-none transition-all shadow-sm appearance-none cursor-pointer"
+            >
+              <option value="all">所有月份</option>
+              {availableMonths.map(month => {
+                const [year, m] = month.split('-');
+                return (
+                  <option key={month} value={month}>
+                    {year}年{parseInt(m)}月
+                  </option>
+                );
+              })}
+            </select>
+          </div>
         </div>
       </div>
 
