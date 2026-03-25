@@ -252,17 +252,7 @@ export default function DyeingPlanForm({ readOnly = false }: { readOnly?: boolea
           <h1 className="text-3xl font-bold text-center mb-6 tracking-widest">臻林面料染色计划单</h1>
           
           <table className="w-full border-collapse text-sm text-center border-t border-l border-black table-fixed min-w-[1000px]">
-            <colgroup>
-              <col className="w-[10%]" />
-              <col className="w-[10%]" />
-              <col className="w-[15%]" />
-              <col className="w-[11.4%]" />
-              <col className="w-[11.4%]" />
-              <col className="w-[11.4%]" />
-              <col className="w-[11.4%]" />
-              <col className="w-[11.4%]" />
-              <col className="w-[8%]" />
-            </colgroup>
+            <colgroup><col className="w-[10%]" /><col className="w-[10%]" /><col className="w-[15%]" /><col className="w-[11.4%]" /><col className="w-[11.4%]" /><col className="w-[11.4%]" /><col className="w-[11.4%]" /><col className="w-[11.4%]" /><col className="w-[8%]" /></colgroup>
             <tbody>
               {/* Row 1: Header Info */}
               <tr>

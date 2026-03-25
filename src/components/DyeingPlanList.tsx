@@ -3,10 +3,9 @@ import { useNavigate } from 'react-router-dom';
 import { Search, FileDown, Edit2, Trash2, FileText, Calendar, Package, User, CheckCircle2, AlertTriangle } from 'lucide-react';
 import { storage, DyeingPlan } from '../services/storage';
 import { format, differenceInDays, parseISO } from 'date-fns';
-import jsPDF from 'jspdf';
-import html2canvas from 'html2canvas';
 import { motion, AnimatePresence } from 'motion/react';
 import { cn } from '../lib/utils';
+import DyeingPlanPrint from './DyeingPlanPrint';
 
 export default function DyeingPlanList() {
   const navigate = useNavigate();
@@ -15,8 +14,6 @@ export default function DyeingPlanList() {
   const [contractSearchTerm, setContractSearchTerm] = useState('');
   const [selectedMonth, setSelectedMonth] = useState<string>('all');
   const [loading, setLoading] = useState(true);
-  const pdfRef = useRef<HTMLDivElement>(null);
-  const [activePdfPlan, setActivePdfPlan] = useState<DyeingPlan | null>(null);
   const [deleteConfirmId, setDeleteConfirmId] = useState<string | null>(null);
 
   useEffect(() => {
@@ -81,31 +78,6 @@ export default function DyeingPlanList() {
       const val = parseFloat(row.quantities[qIndex] as string) || 0;
       return sum + val;
     }, 0);
-  };
-
-  const exportToPDF = async (plan: DyeingPlan) => {
-    setActivePdfPlan(plan);
-    setTimeout(async () => {
-      if (!pdfRef.current) return;
-      try {
-        const canvas = await html2canvas(pdfRef.current, {
-          scale: 2,
-          useCORS: true,
-          logging: false,
-        });
-        const imgData = canvas.toDataURL('image/png');
-        const pdf = new jsPDF('p', 'mm', 'a4');
-        const imgProps = pdf.getImageProperties(imgData);
-        const pdfWidth = pdf.internal.pageSize.getWidth();
-        const pdfHeight = (imgProps.height * pdfWidth) / imgProps.width;
-        pdf.addImage(imgData, 'PNG', 0, 0, pdfWidth, pdfHeight);
-        pdf.save(`${plan.customer}_${plan.styleNumber}_计划单.pdf`);
-      } catch (error) {
-        console.error("PDF Export failed:", error);
-      } finally {
-        setActivePdfPlan(null);
-      }
-    }, 100);
   };
 
   if (loading) return <div className="flex items-center justify-center h-64 text-gray-500 italic">正在加载计划...</div>;
@@ -257,12 +229,7 @@ export default function DyeingPlanList() {
                             >
                               <Edit2 className="w-4 h-4" />
                             </button>
-                            <button
-                              onClick={() => exportToPDF(plan)}
-                              className="p-2 text-gray-400 hover:text-green-600 hover:bg-green-50 rounded-lg transition-all"
-                            >
-                              <FileDown className="w-4 h-4" />
-                            </button>
+                            <DyeingPlanPrint plan={plan} />
                             <button
                               onClick={() => setDeleteConfirmId(plan.id)}
                               className="p-2 text-gray-400 hover:text-red-600 hover:bg-red-50 rounded-lg transition-all"
@@ -302,150 +269,6 @@ export default function DyeingPlanList() {
             ))
           )}
         </AnimatePresence>
-      </div>
-
-      {/* PDF Template - Matching the image layout */}
-      <div className="fixed -left-[2000px] top-0">
-        <div ref={pdfRef} className="w-[210mm] bg-white p-10 text-black font-sans leading-tight">
-          {activePdfPlan && (
-            <div className="border-[1.5px] border-black">
-              <h1 className="text-2xl font-bold text-center py-4 tracking-[0.2em]">臻林面料染色计划单</h1>
-              
-              <table className="w-full border-collapse text-[11px] text-center border-t-[1.5px] border-l-[1.5px] border-black table-fixed">
-                <colgroup>
-                  <col className="w-[10%]" /> {/* 工艺/颜色 */}
-                  <col className="w-[10%]" /> {/* 编辑区/色号 */}
-                  <col className="w-[15%]" /> {/* 标签列 (水洗/水洗后克重/门幅) */}
-                  <col className="w-[13%]" /> {/* 主面料1 */}
-                  <col className="w-[13%]" /> {/* 主面料2 */}
-                  <col className="w-[13%]" /> {/* 主面料3 */}
-                  <col className="w-[13%]" /> {/* 辅料1 */}
-                  <col className="w-[13%]" /> {/* 辅料2 */}
-                </colgroup>
-                <tbody>
-                  {/* Row 1: Header Info */}
-                  <tr>
-                    <td colSpan={2} className="p-1.5 border-r-[1.5px] border-b-[1.5px] border-black align-middle">
-                      客户：{activePdfPlan.customer}
-                    </td>
-                    <td colSpan={2} className="p-1.5 border-r-[1.5px] border-b-[1.5px] border-black align-middle">
-                      款号：{activePdfPlan.styleNumber}
-                    </td>
-                    <td colSpan={2} className="p-1.5 border-r-[1.5px] border-b-[1.5px] border-black align-middle">
-                      日期：{activePdfPlan.date}
-                    </td>
-                    <td colSpan={2} className="p-1.5 border-r-[1.5px] border-b-[1.5px] border-black align-middle">
-                      预计交期：{activePdfPlan.deliveryDate}
-                    </td>
-                  </tr>
-
-                  {/* Row 2: 合同号 & 主面料/辅料 */}
-                  <tr>
-                    <td className="p-1.5 border-r-[1.5px] border-b-[1.5px] border-black font-medium align-middle">合同号</td>
-                    <td colSpan={2} className="p-1.5 border-r-[1.5px] border-b-[1.5px] border-black align-middle">
-                      {activePdfPlan.contractNumber}
-                    </td>
-                    <td colSpan={3} className="p-1.5 border-r-[1.5px] border-b-[1.5px] border-black font-medium align-middle">主面料</td>
-                    <td colSpan={2} className="p-1.5 border-r-[1.5px] border-b-[1.5px] border-black font-medium align-middle">辅料</td>
-                  </tr>
-
-                  {/* Row 3: 工艺, 水洗 */}
-                  <tr>
-                    <td rowSpan={3} className="p-1.5 border-r-[1.5px] border-b-[1.5px] border-black font-medium align-middle">工艺</td>
-                    <td rowSpan={3} className="p-1.5 border-r-[1.5px] border-b-[1.5px] border-black align-middle whitespace-pre-wrap">
-                      {activePdfPlan.process}
-                    </td>
-                    <td className="p-1.5 border-r-[1.5px] border-b-[1.5px] border-black font-medium leading-tight whitespace-nowrap align-middle">水洗</td>
-                    {activePdfPlan.fabrics.map((f, i) => (
-                      <td key={i} className="p-1.5 border-r-[1.5px] border-b-[1.5px] border-black align-middle">
-                        {f.itemNumber || '-'}
-                      </td>
-                    ))}
-                  </tr>
-
-                  {/* Row 4: 水洗后克重 */}
-                  <tr>
-                    <td className="p-1.5 border-r-[1.5px] border-b-[1.5px] border-black font-medium leading-tight whitespace-nowrap align-middle">水洗后克重</td>
-                    {activePdfPlan.fabrics.map((f, i) => (
-                      <td key={i} className="p-1.5 border-r-[1.5px] border-b-[1.5px] border-black align-middle">
-                        {f.weight || '-'}
-                      </td>
-                    ))}
-                  </tr>
-
-                  {/* Row 5: 门幅 */}
-                  <tr>
-                    <td className="p-1.5 border-r-[1.5px] border-b-[1.5px] border-black font-medium leading-tight whitespace-nowrap align-middle">门幅</td>
-                    {activePdfPlan.fabrics.map((f, i) => (
-                      <td key={i} className="p-1.5 border-r-[1.5px] border-b-[1.5px] border-black align-middle">
-                        {f.width || '-'}
-                      </td>
-                    ))}
-                  </tr>
-
-                  {/* Row 6: 颜色, 色号, 品名 */}
-                  <tr>
-                    <td className="p-1.5 border-r-[1.5px] border-b-[1.5px] border-black font-medium align-middle">颜色</td>
-                    <td className="p-1.5 border-r-[1.5px] border-b-[1.5px] border-black font-medium align-middle">色号</td>
-                    <td className="p-1.5 border-r-[1.5px] border-b-[1.5px] border-black font-medium align-middle">品名</td>
-                    {activePdfPlan.fabrics.map((f, i) => (
-                      <td key={i} className="p-1.5 border-r-[1.5px] border-b-[1.5px] border-black align-middle">
-                        {f.productName || '-'}
-                      </td>
-                    ))}
-                  </tr>
-
-                  {/* Data Rows */}
-                  {activePdfPlan.rows.map((row) => (
-                    <tr key={row.id}>
-                      <td className="p-1.5 border-r-[1.5px] border-b-[1.5px] border-black align-middle">{row.colorName}</td>
-                      <td className="p-1.5 border-r-[1.5px] border-b-[1.5px] border-black align-middle">{row.colorCode}</td>
-                      <td className="p-1.5 border-r-[1.5px] border-b-[1.5px] border-black align-middle">{row.notes}</td>
-                      {row.quantities.map((q, idx) => (
-                        <td key={idx} className="p-1.5 border-r-[1.5px] border-b-[1.5px] border-black align-middle">{q}</td>
-                      ))}
-                    </tr>
-                  ))}
-
-                  {/* Empty rows to fill space if needed */}
-                  {[...Array(Math.max(0, 10 - activePdfPlan.rows.length))].map((_, i) => (
-                    <tr key={`empty-${i}`}>
-                      <td className="p-1.5 border-r-[1.5px] border-b-[1.5px] border-black h-7 align-middle"></td>
-                      <td className="p-1.5 border-r-[1.5px] border-b-[1.5px] border-black h-7 align-middle"></td>
-                      <td className="p-1.5 border-r-[1.5px] border-b-[1.5px] border-black h-7 align-middle"></td>
-                      <td className="p-1.5 border-r-[1.5px] border-b-[1.5px] border-black h-7 align-middle"></td>
-                      <td className="p-1.5 border-r-[1.5px] border-b-[1.5px] border-black h-7 align-middle"></td>
-                      <td className="p-1.5 border-r-[1.5px] border-b-[1.5px] border-black h-7 align-middle"></td>
-                      <td className="p-1.5 border-r-[1.5px] border-b-[1.5px] border-black h-7 align-middle"></td>
-                      <td className="p-1.5 border-r-[1.5px] border-b-[1.5px] border-black h-7 align-middle"></td>
-                    </tr>
-                  ))}
-
-                  {/* Total Row */}
-                  <tr className="font-bold">
-                    <td colSpan={2} className="p-1.5 border-r-[1.5px] border-b-[1.5px] border-black align-middle">合计数量</td>
-                    <td className="p-1.5 border-r-[1.5px] border-b-[1.5px] border-black align-middle"></td>
-                    {[0, 1, 2, 3, 4].map((i) => (
-                      <td key={i} className="p-1.5 border-r-[1.5px] border-b-[1.5px] border-black align-middle">
-                        {calculateRowTotal(activePdfPlan, i)}
-                      </td>
-                    ))}
-                  </tr>
-
-                  {/* Notes Row */}
-                  <tr>
-                    <td colSpan={8} className="p-1.5 text-left align-top min-h-[60px] border-r-[1.5px] border-b-[1.5px] border-black">
-                      <div className="flex">
-                        <span className="whitespace-nowrap font-medium">备注：</span>
-                        <div className="whitespace-pre-wrap">{activePdfPlan.notes}</div>
-                      </div>
-                    </td>
-                  </tr>
-                </tbody>
-              </table>
-            </div>
-          )}
-        </div>
       </div>
 
       {/* Delete Confirmation Modal */}

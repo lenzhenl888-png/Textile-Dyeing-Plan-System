@@ -1,7 +1,8 @@
 import React, { useState, useEffect } from 'react';
 import { storage, DyeingPlan } from '../services/storage';
-import { CheckCircle2, Circle } from 'lucide-react';
+import { CheckCircle2, Circle, Printer } from 'lucide-react';
 import { cn } from '../lib/utils';
+import DyeingPlanPrint from './DyeingPlanPrint';
 
 const PROGRESS_STEPS = [
   '购纱',
@@ -71,13 +72,14 @@ export default function OrderProgressTable() {
           <table className="w-full border-collapse text-sm text-center min-w-[1000px]">
             <thead>
               <tr>
-                <th colSpan={3} className="border-b border-r border-gray-200 bg-indigo-50/50 p-3 font-semibold text-gray-700">订单信息</th>
+                <th colSpan={4} className="border-b border-r border-gray-200 bg-indigo-50/50 p-3 font-semibold text-gray-700">订单信息</th>
                 <th colSpan={PROGRESS_STEPS.length} className="border-b border-gray-200 bg-emerald-50/50 p-3 font-semibold text-gray-700">进度</th>
               </tr>
               <tr>
-                <th className="border-b border-r border-gray-200 bg-gray-50 p-3 font-medium text-gray-600 w-[12%]">合同号</th>
-                <th className="border-b border-r border-gray-200 bg-gray-50 p-3 font-medium text-gray-600 w-[12%]">款号</th>
-                <th className="border-b border-r border-gray-200 bg-gray-50 p-3 font-medium text-gray-600 w-[12%]">客户</th>
+                <th className="border-b border-r border-gray-200 bg-gray-50 p-3 font-medium text-gray-600 w-[10%]">合同号</th>
+                <th className="border-b border-r border-gray-200 bg-gray-50 p-3 font-medium text-gray-600 w-[10%]">款号</th>
+                <th className="border-b border-r border-gray-200 bg-gray-50 p-3 font-medium text-gray-600 w-[10%]">客户</th>
+                <th className="border-b border-r border-gray-200 bg-gray-50 p-3 font-medium text-gray-600 w-[8%]">操作</th>
                 {PROGRESS_STEPS.map((step, index) => (
                   <th 
                     key={step} 
@@ -97,6 +99,9 @@ export default function OrderProgressTable() {
                   <td className="border-b border-r border-gray-200 p-3 text-gray-900">{plan.contractNumber || '-'}</td>
                   <td className="border-b border-r border-gray-200 p-3 text-gray-900">{plan.styleNumber || '-'}</td>
                   <td className="border-b border-r border-gray-200 p-3 text-gray-900">{plan.customer || '-'}</td>
+                  <td className="border-b border-r border-gray-200 p-3 text-gray-900">
+                    <DyeingPlanPrint plan={plan} />
+                  </td>
                   
                   {PROGRESS_STEPS.map((step, index) => {
                     const isChecked = !!plan.progress?.[step];
