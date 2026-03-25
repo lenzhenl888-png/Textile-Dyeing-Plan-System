@@ -251,22 +251,22 @@ export default function DyeingPlanForm({ readOnly = false }: { readOnly?: boolea
         <fieldset disabled={readOnly} className="bg-white p-8 rounded-xl border border-gray-200 shadow-sm overflow-x-auto">
           <h1 className="text-3xl font-bold text-center mb-6 tracking-widest">臻林面料染色计划单</h1>
           
-          <table className="w-full border-collapse text-sm text-center border border-black table-fixed min-w-[1000px]">
+          <table className="w-full border-collapse text-sm text-center border-t border-l border-black table-fixed min-w-[1000px]">
             <colgroup>
               <col className="w-[10%]" />
               <col className="w-[10%]" />
-              <col className="w-[12%]" />
-              <col className="w-[12%]" />
-              <col className="w-[12%]" />
-              <col className="w-[12%]" />
-              <col className="w-[12%]" />
-              <col className="w-[12%]" />
+              <col className="w-[15%]" />
+              <col className="w-[11.4%]" />
+              <col className="w-[11.4%]" />
+              <col className="w-[11.4%]" />
+              <col className="w-[11.4%]" />
+              <col className="w-[11.4%]" />
               <col className="w-[8%]" />
             </colgroup>
             <tbody>
               {/* Row 1: Header Info */}
-              <tr className="border-b border-black">
-                <td colSpan={2} className="p-2 border-r border-black">
+              <tr>
+                <td colSpan={2} className="p-2 border-r border-b border-black align-middle">
                   <div className="flex items-center justify-center gap-2">
                     <span className="whitespace-nowrap">客户：</span>
                     <input 
@@ -277,7 +277,7 @@ export default function DyeingPlanForm({ readOnly = false }: { readOnly?: boolea
                     />
                   </div>
                 </td>
-                <td colSpan={2} className="p-2 border-r border-black">
+                <td colSpan={2} className="p-2 border-r border-b border-black align-middle">
                   <div className="flex items-center justify-center gap-2">
                     <span className="whitespace-nowrap">款号：</span>
                     <input 
@@ -287,7 +287,7 @@ export default function DyeingPlanForm({ readOnly = false }: { readOnly?: boolea
                     />
                   </div>
                 </td>
-                <td colSpan={2} className="p-2 border-r border-black">
+                <td colSpan={2} className="p-2 border-r border-b border-black align-middle">
                   <div className="flex items-center justify-center gap-2">
                     <span className="whitespace-nowrap">日期：</span>
                     <input 
@@ -298,7 +298,7 @@ export default function DyeingPlanForm({ readOnly = false }: { readOnly?: boolea
                     />
                   </div>
                 </td>
-                <td colSpan={3} className="p-2">
+                <td colSpan={3} className="p-2 border-r border-b border-black align-middle">
                   <div className="flex items-center justify-center gap-2">
                     <span className="whitespace-nowrap">预计交期：</span>
                     <input 
@@ -312,23 +312,23 @@ export default function DyeingPlanForm({ readOnly = false }: { readOnly?: boolea
               </tr>
 
               {/* Row 2: 合同号 & 主面料/辅料 */}
-              <tr className="border-b border-black">
-                <td className="p-2 border-r border-black font-medium">合同号</td>
-                <td colSpan={2} className="p-2 border-r border-black">
+              <tr>
+                <td className="p-2 border-r border-b border-black font-medium align-middle">合同号</td>
+                <td colSpan={2} className="p-2 border-r border-b border-black align-middle">
                   <input 
                     value={formData.contractNumber}
                     onChange={(e) => setFormData({ ...formData, contractNumber: e.target.value })}
                     className="w-full outline-none bg-transparent text-center" 
                   />
                 </td>
-                <td colSpan={3} className="p-2 border-r border-black font-medium">主面料</td>
-                <td colSpan={3} className="p-2 font-medium">辅料</td>
+                <td colSpan={3} className="p-2 border-r border-b border-black font-medium align-middle">主面料</td>
+                <td colSpan={3} className="p-2 border-r border-b border-black font-medium align-middle">辅料</td>
               </tr>
 
-              {/* Row 3: 工艺, 面料货号 */}
-              <tr className="border-b border-black">
-                <td rowSpan={3} className="p-2 border-r border-black font-medium align-middle">工艺</td>
-                <td rowSpan={3} className="p-2 border-r border-black align-middle">
+              {/* Row 3: 工艺, 水洗 */}
+              <tr>
+                <td rowSpan={3} className="p-2 border-r border-b border-black font-medium align-middle">工艺</td>
+                <td rowSpan={3} className="p-2 border-r border-b border-black align-middle">
                   <textarea 
                     value={formData.process}
                     onChange={(e) => setFormData({ ...formData, process: e.target.value })}
@@ -336,9 +336,9 @@ export default function DyeingPlanForm({ readOnly = false }: { readOnly?: boolea
                     placeholder="编辑区" 
                   />
                 </td>
-                <td className="p-2 border-r border-black font-medium">面料货号</td>
+                <td className="p-2 border-r border-b border-black font-medium whitespace-nowrap align-middle">水洗</td>
                 {formData.fabrics?.map((fabric, i) => (
-                  <td key={i} className="p-2 border-r border-black">
+                  <td key={i} className="p-2 border-r border-b border-black align-middle">
                     <input 
                       value={fabric.itemNumber}
                       onChange={(e) => handleFabricChange(i, 'itemNumber', e.target.value)}
@@ -347,30 +347,14 @@ export default function DyeingPlanForm({ readOnly = false }: { readOnly?: boolea
                     />
                   </td>
                 ))}
-                <td className="p-2"></td>
+                <td className="p-2 border-r border-b border-black align-middle"></td>
               </tr>
 
-              {/* Row 4: 门幅cm */}
-              <tr className="border-b border-black">
-                <td className="p-2 border-r border-black font-medium">门幅cm</td>
+              {/* Row 4: 水洗后克重 */}
+              <tr>
+                <td className="p-2 border-r border-b border-black font-medium whitespace-nowrap align-middle">水洗后克重</td>
                 {formData.fabrics?.map((fabric, i) => (
-                  <td key={i} className="p-2 border-r border-black">
-                    <input 
-                      value={fabric.width}
-                      onChange={(e) => handleFabricChange(i, 'width', e.target.value)}
-                      className="w-full outline-none bg-transparent text-center" 
-                      placeholder="编辑区"
-                    />
-                  </td>
-                ))}
-                <td className="p-2"></td>
-              </tr>
-
-              {/* Row 5: 克重g/m² */}
-              <tr className="border-b border-black">
-                <td className="p-2 border-r border-black font-medium">克重g/m²</td>
-                {formData.fabrics?.map((fabric, i) => (
-                  <td key={i} className="p-2 border-r border-black">
+                  <td key={i} className="p-2 border-r border-b border-black align-middle">
                     <input 
                       value={fabric.weight}
                       onChange={(e) => handleFabricChange(i, 'weight', e.target.value)}
@@ -379,16 +363,32 @@ export default function DyeingPlanForm({ readOnly = false }: { readOnly?: boolea
                     />
                   </td>
                 ))}
-                <td className="p-2"></td>
+                <td className="p-2 border-r border-b border-black align-middle"></td>
+              </tr>
+
+              {/* Row 5: 门幅 */}
+              <tr>
+                <td className="p-2 border-r border-b border-black font-medium whitespace-nowrap align-middle">门幅</td>
+                {formData.fabrics?.map((fabric, i) => (
+                  <td key={i} className="p-2 border-r border-b border-black align-middle">
+                    <input 
+                      value={fabric.width}
+                      onChange={(e) => handleFabricChange(i, 'width', e.target.value)}
+                      className="w-full outline-none bg-transparent text-center" 
+                      placeholder="编辑区"
+                    />
+                  </td>
+                ))}
+                <td className="p-2 border-r border-b border-black align-middle"></td>
               </tr>
 
               {/* Row 6: 颜色, 色号, 品名 */}
-              <tr className="border-b border-black">
-                <td className="p-2 border-r border-black font-medium">颜色</td>
-                <td className="p-2 border-r border-black font-medium">色号</td>
-                <td className="p-2 border-r border-black font-medium">品名</td>
+              <tr>
+                <td className="p-2 border-r border-b border-black font-medium align-middle">颜色</td>
+                <td className="p-2 border-r border-b border-black font-medium align-middle">色号</td>
+                <td className="p-2 border-r border-b border-black font-medium align-middle">品名</td>
                 {formData.fabrics?.map((fabric, i) => (
-                  <td key={i} className="p-2 border-r border-black">
+                  <td key={i} className="p-2 border-r border-b border-black align-middle">
                     <input 
                       value={fabric.productName}
                       onChange={(e) => handleFabricChange(i, 'productName', e.target.value)}
@@ -397,7 +397,7 @@ export default function DyeingPlanForm({ readOnly = false }: { readOnly?: boolea
                     />
                   </td>
                 ))}
-                <td className="p-2">
+                <td className="p-2 border-r border-b border-black align-middle">
                   <select 
                     value={formData.unit}
                     onChange={(e) => setFormData({ ...formData, unit: e.target.value as '米' | '公斤' })}
@@ -411,8 +411,8 @@ export default function DyeingPlanForm({ readOnly = false }: { readOnly?: boolea
 
               {/* Row 7+: Data Rows */}
               {formData.rows?.map((row, rowIndex) => (
-                <tr key={row.id} className="border-b border-black hover:bg-gray-50/50 transition-colors">
-                  <td className="p-2 border-r border-black">
+                <tr key={row.id} className="hover:bg-gray-50/50 transition-colors">
+                  <td className="p-2 border-r border-b border-black align-middle">
                     <input 
                       value={row.colorName}
                       onChange={(e) => handleRowChange(rowIndex, 'colorName', e.target.value)}
@@ -420,7 +420,7 @@ export default function DyeingPlanForm({ readOnly = false }: { readOnly?: boolea
                       placeholder={`颜色${rowIndex + 1}`}
                     />
                   </td>
-                  <td className="p-2 border-r border-black">
+                  <td className="p-2 border-r border-b border-black align-middle">
                     <input 
                       value={row.colorCode}
                       onChange={(e) => handleRowChange(rowIndex, 'colorCode', e.target.value)}
@@ -428,7 +428,7 @@ export default function DyeingPlanForm({ readOnly = false }: { readOnly?: boolea
                       placeholder={`色号${rowIndex + 1}`}
                     />
                   </td>
-                  <td className="p-2 border-r border-black">
+                  <td className="p-2 border-r border-b border-black align-middle">
                     <input 
                       value={row.notes}
                       onChange={(e) => handleRowChange(rowIndex, 'notes', e.target.value)}
@@ -437,7 +437,7 @@ export default function DyeingPlanForm({ readOnly = false }: { readOnly?: boolea
                     />
                   </td>
                   {row.quantities.map((q, qIndex) => (
-                    <td key={qIndex} className="p-2 border-r border-black">
+                    <td key={qIndex} className="p-2 border-r border-b border-black align-middle">
                       <input 
                         type="number"
                         value={q}
@@ -447,7 +447,7 @@ export default function DyeingPlanForm({ readOnly = false }: { readOnly?: boolea
                       />
                     </td>
                   ))}
-                  <td className="p-2 text-center">
+                  <td className="p-2 border-r border-b border-black align-middle text-center">
                     {!readOnly && (
                       <button 
                         type="button"
@@ -462,20 +462,20 @@ export default function DyeingPlanForm({ readOnly = false }: { readOnly?: boolea
               ))}
 
               {/* Total Row */}
-              <tr className="border-b border-black font-bold">
-                <td colSpan={2} className="p-2 border-r border-black">合计数量</td>
-                <td className="p-2 border-r border-black"></td>
+              <tr className="font-bold">
+                <td colSpan={2} className="p-2 border-r border-b border-black align-middle text-center">合计数量</td>
+                <td className="p-2 border-r border-b border-black align-middle"></td>
                 {[0, 1, 2, 3, 4].map((i) => (
-                  <td key={i} className="p-2 border-r border-black text-center">
+                  <td key={i} className="p-2 border-r border-b border-black align-middle text-center">
                     {calculateTotal(i)}
                   </td>
                 ))}
-                <td className="p-2"></td>
+                <td className="p-2 border-r border-b border-black align-middle"></td>
               </tr>
 
               {/* Notes Row */}
               <tr>
-                <td colSpan={9} className="p-2 text-left align-top">
+                <td colSpan={9} className="p-2 text-left align-top border-r border-b border-black">
                   <div className="flex">
                     <span className="whitespace-nowrap font-medium">备注：</span>
                     <textarea 

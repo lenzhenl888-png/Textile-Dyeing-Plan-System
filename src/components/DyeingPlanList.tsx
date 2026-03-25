@@ -43,10 +43,15 @@ export default function DyeingPlanList() {
   }).filter(Boolean))) as string[]).sort((a, b) => b.localeCompare(a));
 
   const filteredPlans = plans.filter(plan => {
-    const matchesSearch = plan.customer?.toLowerCase().includes(searchTerm.toLowerCase()) ||
-      plan.styleNumber?.toLowerCase().includes(searchTerm.toLowerCase());
+    const search = searchTerm.toLowerCase();
+    const contractSearch = contractSearchTerm.toLowerCase();
     
-    const matchesContract = plan.contractNumber?.toLowerCase().includes(contractSearchTerm.toLowerCase());
+    const matchesSearch = !search || 
+      (plan.customer?.toLowerCase().includes(search)) ||
+      (plan.styleNumber?.toLowerCase().includes(search));
+    
+    const matchesContract = !contractSearch || 
+      (plan.contractNumber?.toLowerCase().includes(contractSearch));
     
     let matchesMonth = true;
     if (selectedMonth !== 'all' && plan.date) {
@@ -306,85 +311,85 @@ export default function DyeingPlanList() {
             <div className="border-[1.5px] border-black">
               <h1 className="text-2xl font-bold text-center py-4 tracking-[0.2em]">臻林面料染色计划单</h1>
               
-              <table className="w-full border-collapse text-xs text-center border-t-[1.5px] border-black table-fixed">
+              <table className="w-full border-collapse text-[11px] text-center border-t-[1.5px] border-l-[1.5px] border-black table-fixed">
                 <colgroup>
                   <col className="w-[10%]" /> {/* 工艺/颜色 */}
                   <col className="w-[10%]" /> {/* 编辑区/色号 */}
-                  <col className="w-[12%]" /> {/* 面料货号/备注区 */}
-                  <col className="w-[13.6%]" /> {/* 主面料1 */}
-                  <col className="w-[13.6%]" /> {/* 主面料2 */}
-                  <col className="w-[13.6%]" /> {/* 主面料3 */}
-                  <col className="w-[13.6%]" /> {/* 辅料1 */}
-                  <col className="w-[13.6%]" /> {/* 辅料2 */}
+                  <col className="w-[15%]" /> {/* 标签列 (水洗/水洗后克重/门幅) */}
+                  <col className="w-[13%]" /> {/* 主面料1 */}
+                  <col className="w-[13%]" /> {/* 主面料2 */}
+                  <col className="w-[13%]" /> {/* 主面料3 */}
+                  <col className="w-[13%]" /> {/* 辅料1 */}
+                  <col className="w-[13%]" /> {/* 辅料2 */}
                 </colgroup>
                 <tbody>
                   {/* Row 1: Header Info */}
-                  <tr className="border-b-[1.5px] border-black">
-                    <td colSpan={2} className="p-2 border-r-[1.5px] border-black">
+                  <tr>
+                    <td colSpan={2} className="p-1.5 border-r-[1.5px] border-b-[1.5px] border-black align-middle">
                       客户：{activePdfPlan.customer}
                     </td>
-                    <td colSpan={2} className="p-2 border-r-[1.5px] border-black">
+                    <td colSpan={2} className="p-1.5 border-r-[1.5px] border-b-[1.5px] border-black align-middle">
                       款号：{activePdfPlan.styleNumber}
                     </td>
-                    <td colSpan={2} className="p-2 border-r-[1.5px] border-black">
+                    <td colSpan={2} className="p-1.5 border-r-[1.5px] border-b-[1.5px] border-black align-middle">
                       日期：{activePdfPlan.date}
                     </td>
-                    <td colSpan={2} className="p-2">
+                    <td colSpan={2} className="p-1.5 border-r-[1.5px] border-b-[1.5px] border-black align-middle">
                       预计交期：{activePdfPlan.deliveryDate}
                     </td>
                   </tr>
 
                   {/* Row 2: 合同号 & 主面料/辅料 */}
-                  <tr className="border-b-[1.5px] border-black">
-                    <td className="p-2 border-r-[1.5px] border-black font-medium">合同号</td>
-                    <td colSpan={2} className="p-2 border-r-[1.5px] border-black">
+                  <tr>
+                    <td className="p-1.5 border-r-[1.5px] border-b-[1.5px] border-black font-medium align-middle">合同号</td>
+                    <td colSpan={2} className="p-1.5 border-r-[1.5px] border-b-[1.5px] border-black align-middle">
                       {activePdfPlan.contractNumber}
                     </td>
-                    <td colSpan={3} className="p-2 border-r-[1.5px] border-black font-medium">主面料</td>
-                    <td colSpan={2} className="p-2 font-medium">辅料</td>
+                    <td colSpan={3} className="p-1.5 border-r-[1.5px] border-b-[1.5px] border-black font-medium align-middle">主面料</td>
+                    <td colSpan={2} className="p-1.5 border-r-[1.5px] border-b-[1.5px] border-black font-medium align-middle">辅料</td>
                   </tr>
 
-                  {/* Row 3: 工艺, 面料货号 */}
-                  <tr className="border-b-[1.5px] border-black">
-                    <td rowSpan={3} className="p-2 border-r-[1.5px] border-black font-medium align-middle">工艺</td>
-                    <td rowSpan={3} className="p-2 border-r-[1.5px] border-black align-middle whitespace-pre-wrap">
+                  {/* Row 3: 工艺, 水洗 */}
+                  <tr>
+                    <td rowSpan={3} className="p-1.5 border-r-[1.5px] border-b-[1.5px] border-black font-medium align-middle">工艺</td>
+                    <td rowSpan={3} className="p-1.5 border-r-[1.5px] border-b-[1.5px] border-black align-middle whitespace-pre-wrap">
                       {activePdfPlan.process}
                     </td>
-                    <td className="p-2 border-r-[1.5px] border-black font-medium">面料货号</td>
+                    <td className="p-1.5 border-r-[1.5px] border-b-[1.5px] border-black font-medium leading-tight whitespace-nowrap align-middle">水洗</td>
                     {activePdfPlan.fabrics.map((f, i) => (
-                      <td key={i} className="p-2 border-r-[1.5px] border-black last:border-r-0">
+                      <td key={i} className="p-1.5 border-r-[1.5px] border-b-[1.5px] border-black align-middle">
                         {f.itemNumber || '-'}
                       </td>
                     ))}
                   </tr>
 
-                  {/* Row 4: 门幅cm */}
-                  <tr className="border-b-[1.5px] border-black">
-                    <td className="p-2 border-r-[1.5px] border-black font-medium">门幅cm</td>
+                  {/* Row 4: 水洗后克重 */}
+                  <tr>
+                    <td className="p-1.5 border-r-[1.5px] border-b-[1.5px] border-black font-medium leading-tight whitespace-nowrap align-middle">水洗后克重</td>
                     {activePdfPlan.fabrics.map((f, i) => (
-                      <td key={i} className="p-2 border-r-[1.5px] border-black last:border-r-0">
-                        {f.width || '-'}
-                      </td>
-                    ))}
-                  </tr>
-
-                  {/* Row 5: 克重g/m² */}
-                  <tr className="border-b-[1.5px] border-black">
-                    <td className="p-2 border-r-[1.5px] border-black font-medium">克重g/m²</td>
-                    {activePdfPlan.fabrics.map((f, i) => (
-                      <td key={i} className="p-2 border-r-[1.5px] border-black last:border-r-0">
+                      <td key={i} className="p-1.5 border-r-[1.5px] border-b-[1.5px] border-black align-middle">
                         {f.weight || '-'}
                       </td>
                     ))}
                   </tr>
 
-                  {/* Row 6: 颜色, 色号, 品名 */}
-                  <tr className="border-b-[1.5px] border-black">
-                    <td className="p-2 border-r-[1.5px] border-black font-medium">颜色</td>
-                    <td className="p-2 border-r-[1.5px] border-black font-medium">色号</td>
-                    <td className="p-2 border-r-[1.5px] border-black font-medium">品名</td>
+                  {/* Row 5: 门幅 */}
+                  <tr>
+                    <td className="p-1.5 border-r-[1.5px] border-b-[1.5px] border-black font-medium leading-tight whitespace-nowrap align-middle">门幅</td>
                     {activePdfPlan.fabrics.map((f, i) => (
-                      <td key={i} className="p-2 border-r-[1.5px] border-black last:border-r-0">
+                      <td key={i} className="p-1.5 border-r-[1.5px] border-b-[1.5px] border-black align-middle">
+                        {f.width || '-'}
+                      </td>
+                    ))}
+                  </tr>
+
+                  {/* Row 6: 颜色, 色号, 品名 */}
+                  <tr>
+                    <td className="p-1.5 border-r-[1.5px] border-b-[1.5px] border-black font-medium align-middle">颜色</td>
+                    <td className="p-1.5 border-r-[1.5px] border-b-[1.5px] border-black font-medium align-middle">色号</td>
+                    <td className="p-1.5 border-r-[1.5px] border-b-[1.5px] border-black font-medium align-middle">品名</td>
+                    {activePdfPlan.fabrics.map((f, i) => (
+                      <td key={i} className="p-1.5 border-r-[1.5px] border-b-[1.5px] border-black align-middle">
                         {f.productName || '-'}
                       </td>
                     ))}
@@ -392,36 +397,36 @@ export default function DyeingPlanList() {
 
                   {/* Data Rows */}
                   {activePdfPlan.rows.map((row) => (
-                    <tr key={row.id} className="border-b-[1.5px] border-black">
-                      <td className="p-2 border-r-[1.5px] border-black">{row.colorName}</td>
-                      <td className="p-2 border-r-[1.5px] border-black">{row.colorCode}</td>
-                      <td className="p-2 border-r-[1.5px] border-black">{row.notes}</td>
+                    <tr key={row.id}>
+                      <td className="p-1.5 border-r-[1.5px] border-b-[1.5px] border-black align-middle">{row.colorName}</td>
+                      <td className="p-1.5 border-r-[1.5px] border-b-[1.5px] border-black align-middle">{row.colorCode}</td>
+                      <td className="p-1.5 border-r-[1.5px] border-b-[1.5px] border-black align-middle">{row.notes}</td>
                       {row.quantities.map((q, idx) => (
-                        <td key={idx} className="p-2 border-r-[1.5px] border-black last:border-r-0">{q}</td>
+                        <td key={idx} className="p-1.5 border-r-[1.5px] border-b-[1.5px] border-black align-middle">{q}</td>
                       ))}
                     </tr>
                   ))}
 
                   {/* Empty rows to fill space if needed */}
                   {[...Array(Math.max(0, 10 - activePdfPlan.rows.length))].map((_, i) => (
-                    <tr key={`empty-${i}`} className="border-b-[1.5px] border-black">
-                      <td className="p-2 border-r-[1.5px] border-black h-8"></td>
-                      <td className="p-2 border-r-[1.5px] border-black h-8"></td>
-                      <td className="p-2 border-r-[1.5px] border-black h-8"></td>
-                      <td className="p-2 border-r-[1.5px] border-black h-8"></td>
-                      <td className="p-2 border-r-[1.5px] border-black h-8"></td>
-                      <td className="p-2 border-r-[1.5px] border-black h-8"></td>
-                      <td className="p-2 border-r-[1.5px] border-black h-8"></td>
-                      <td className="p-2 h-8"></td>
+                    <tr key={`empty-${i}`}>
+                      <td className="p-1.5 border-r-[1.5px] border-b-[1.5px] border-black h-7 align-middle"></td>
+                      <td className="p-1.5 border-r-[1.5px] border-b-[1.5px] border-black h-7 align-middle"></td>
+                      <td className="p-1.5 border-r-[1.5px] border-b-[1.5px] border-black h-7 align-middle"></td>
+                      <td className="p-1.5 border-r-[1.5px] border-b-[1.5px] border-black h-7 align-middle"></td>
+                      <td className="p-1.5 border-r-[1.5px] border-b-[1.5px] border-black h-7 align-middle"></td>
+                      <td className="p-1.5 border-r-[1.5px] border-b-[1.5px] border-black h-7 align-middle"></td>
+                      <td className="p-1.5 border-r-[1.5px] border-b-[1.5px] border-black h-7 align-middle"></td>
+                      <td className="p-1.5 border-r-[1.5px] border-b-[1.5px] border-black h-7 align-middle"></td>
                     </tr>
                   ))}
 
                   {/* Total Row */}
-                  <tr className="border-b-[1.5px] border-black font-bold">
-                    <td colSpan={2} className="p-2 border-r-[1.5px] border-black">合计数量</td>
-                    <td className="p-2 border-r-[1.5px] border-black"></td>
+                  <tr className="font-bold">
+                    <td colSpan={2} className="p-1.5 border-r-[1.5px] border-b-[1.5px] border-black align-middle">合计数量</td>
+                    <td className="p-1.5 border-r-[1.5px] border-b-[1.5px] border-black align-middle"></td>
                     {[0, 1, 2, 3, 4].map((i) => (
-                      <td key={i} className="p-2 border-r-[1.5px] border-black last:border-r-0">
+                      <td key={i} className="p-1.5 border-r-[1.5px] border-b-[1.5px] border-black align-middle">
                         {calculateRowTotal(activePdfPlan, i)}
                       </td>
                     ))}
@@ -429,7 +434,7 @@ export default function DyeingPlanList() {
 
                   {/* Notes Row */}
                   <tr>
-                    <td colSpan={8} className="p-2 text-left align-top min-h-[60px]">
+                    <td colSpan={8} className="p-1.5 text-left align-top min-h-[60px] border-r-[1.5px] border-b-[1.5px] border-black">
                       <div className="flex">
                         <span className="whitespace-nowrap font-medium">备注：</span>
                         <div className="whitespace-pre-wrap">{activePdfPlan.notes}</div>
