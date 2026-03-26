@@ -315,7 +315,7 @@ export default function DyeingPlanForm({ readOnly = false }: { readOnly?: boolea
                 <td colSpan={3} className="p-2 border-r border-b border-black font-medium align-middle">辅料</td>
               </tr>
 
-              {/* Row 3: 工艺, 水洗 */}
+              {/* Row 3: 工艺, 面料编号 */}
               <tr>
                 <td rowSpan={3} className="p-2 border-r border-b border-black font-medium align-middle">工艺</td>
                 <td rowSpan={3} className="p-2 border-r border-b border-black align-middle">
@@ -326,7 +326,7 @@ export default function DyeingPlanForm({ readOnly = false }: { readOnly?: boolea
                     placeholder="编辑区" 
                   />
                 </td>
-                <td className="p-2 border-r border-b border-black font-medium whitespace-nowrap align-middle">水洗</td>
+                <td className="p-2 border-r border-b border-black font-medium whitespace-nowrap align-middle">面料编号</td>
                 {formData.fabrics?.map((fabric, i) => (
                   <td key={i} className="p-2 border-r border-b border-black align-middle">
                     <input 
@@ -340,14 +340,14 @@ export default function DyeingPlanForm({ readOnly = false }: { readOnly?: boolea
                 <td className="p-2 border-r border-b border-black align-middle"></td>
               </tr>
 
-              {/* Row 4: 水洗后克重 */}
+              {/* Row 4: 门幅cm */}
               <tr>
-                <td className="p-2 border-r border-b border-black font-medium whitespace-nowrap align-middle">水洗后克重</td>
+                <td className="p-2 border-r border-b border-black font-medium whitespace-nowrap align-middle">门幅cm</td>
                 {formData.fabrics?.map((fabric, i) => (
                   <td key={i} className="p-2 border-r border-b border-black align-middle">
                     <input 
-                      value={fabric.weight}
-                      onChange={(e) => handleFabricChange(i, 'weight', e.target.value)}
+                      value={fabric.width}
+                      onChange={(e) => handleFabricChange(i, 'width', e.target.value)}
                       className="w-full outline-none bg-transparent text-center" 
                       placeholder="编辑区"
                     />
@@ -356,14 +356,14 @@ export default function DyeingPlanForm({ readOnly = false }: { readOnly?: boolea
                 <td className="p-2 border-r border-b border-black align-middle"></td>
               </tr>
 
-              {/* Row 5: 门幅 */}
+              {/* Row 5: 克重g/m² */}
               <tr>
-                <td className="p-2 border-r border-b border-black font-medium whitespace-nowrap align-middle">门幅</td>
+                <td className="p-2 border-r border-b border-black font-medium whitespace-nowrap align-middle">克重g/m²</td>
                 {formData.fabrics?.map((fabric, i) => (
                   <td key={i} className="p-2 border-r border-b border-black align-middle">
                     <input 
-                      value={fabric.width}
-                      onChange={(e) => handleFabricChange(i, 'width', e.target.value)}
+                      value={fabric.weight}
+                      onChange={(e) => handleFabricChange(i, 'weight', e.target.value)}
                       className="w-full outline-none bg-transparent text-center" 
                       placeholder="编辑区"
                     />

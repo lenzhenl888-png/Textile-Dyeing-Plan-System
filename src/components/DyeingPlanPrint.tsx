@@ -163,7 +163,7 @@ export default function DyeingPlanPrint({ plan, variant = 'icon' }: DyeingPlanPr
                             <td rowSpan={3} className="p-1.5 border-r-[1.5px] border-b-[1.5px] border-black align-middle whitespace-pre-wrap">
                               {plan.process}
                             </td>
-                            <td className="p-1.5 border-r-[1.5px] border-b-[1.5px] border-black font-medium leading-tight whitespace-nowrap align-middle">水洗</td>
+                            <td className="p-1.5 border-r-[1.5px] border-b-[1.5px] border-black font-medium leading-tight whitespace-nowrap align-middle">面料编号</td>
                             {plan.fabrics.map((f, i) => (
                               <td key={i} className="p-1.5 border-r-[1.5px] border-b-[1.5px] border-black align-middle">
                                 {f.itemNumber || '-'}
@@ -171,18 +171,18 @@ export default function DyeingPlanPrint({ plan, variant = 'icon' }: DyeingPlanPr
                             ))}
                           </tr>
                           <tr>
-                            <td className="p-1.5 border-r-[1.5px] border-b-[1.5px] border-black font-medium leading-tight whitespace-nowrap align-middle">水洗后克重</td>
+                            <td className="p-1.5 border-r-[1.5px] border-b-[1.5px] border-black font-medium leading-tight whitespace-nowrap align-middle">门幅cm</td>
                             {plan.fabrics.map((f, i) => (
                               <td key={i} className="p-1.5 border-r-[1.5px] border-b-[1.5px] border-black align-middle">
-                                {f.weight || '-'}
+                                {f.width || '-'}
                               </td>
                             ))}
                           </tr>
                           <tr>
-                            <td className="p-1.5 border-r-[1.5px] border-b-[1.5px] border-black font-medium leading-tight whitespace-nowrap align-middle">门幅</td>
+                            <td className="p-1.5 border-r-[1.5px] border-b-[1.5px] border-black font-medium leading-tight whitespace-nowrap align-middle">克重g/m²</td>
                             {plan.fabrics.map((f, i) => (
                               <td key={i} className="p-1.5 border-r-[1.5px] border-b-[1.5px] border-black align-middle">
-                                {f.width || '-'}
+                                {f.weight || '-'}
                               </td>
                             ))}
                           </tr>
