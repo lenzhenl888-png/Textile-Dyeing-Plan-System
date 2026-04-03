@@ -3,7 +3,7 @@ import { FileDown, Printer, X, Eye, FileSpreadsheet } from 'lucide-react';
 import { DyeingPlan } from '../services/storage';
 import jsPDF from 'jspdf';
 import html2canvas from 'html2canvas';
-import * as XLSX from 'xlsx';
+import XLSX from 'xlsx-js-style';
 import { motion, AnimatePresence } from 'motion/react';
 import { cn } from '../lib/utils';
 
@@ -58,95 +58,127 @@ export default function DyeingPlanPrint({ plan, variant = 'icon' }: DyeingPlanPr
   };
 
   const handleExportExcel = () => {
-    const wsData = [];
+    const wsData: any[] = [];
     
+    const borderStyle = {
+      top: { style: 'thin', color: { rgb: "000000" } },
+      bottom: { style: 'thin', color: { rgb: "000000" } },
+      left: { style: 'thin', color: { rgb: "000000" } },
+      right: { style: 'thin', color: { rgb: "000000" } }
+    };
+
+    const baseStyle = {
+      border: borderStyle,
+      alignment: { vertical: 'center', horizontal: 'center', wrapText: true },
+      font: { name: '宋体', sz: 11 }
+    };
+
+    const boldStyle = {
+      ...baseStyle,
+      font: { name: '宋体', sz: 11, bold: true }
+    };
+
+    const titleStyle = {
+      ...baseStyle,
+      font: { name: '宋体', sz: 16, bold: true }
+    };
+
+    const createCell = (val: any, style: any = baseStyle) => ({ v: val || '', s: style });
+    const emptyCell = () => createCell('', baseStyle);
+
     // Row 0
-    wsData.push(['臻林面料染色计划单', '', '', '', '', '', '', '']);
+    wsData.push([
+      createCell('臻林面料染色计划单', titleStyle),
+      emptyCell(), emptyCell(), emptyCell(), emptyCell(), emptyCell(), emptyCell(), emptyCell()
+    ]);
     
     // Row 1
     wsData.push([
-      `客户：${plan.customer}`, '', 
-      `款号：${plan.styleNumber}`, '', 
-      `日期：${plan.date}`, '', 
-      `预计交期：${plan.deliveryDate}`, ''
+      createCell(`客户：${plan.customer}`, baseStyle), emptyCell(), 
+      createCell(`款号：${plan.styleNumber}`, baseStyle), emptyCell(), 
+      createCell(`日期：${plan.date}`, baseStyle), emptyCell(), 
+      createCell(`预计交期：${plan.deliveryDate}`, baseStyle), emptyCell()
     ]);
     
     // Row 2
     wsData.push([
-      '合同号', plan.contractNumber, '', 
-      '主面料', '', '', 
-      '辅料', ''
+      createCell('合同号', baseStyle), createCell(plan.contractNumber, baseStyle), emptyCell(), 
+      createCell('主面料', baseStyle), emptyCell(), emptyCell(), 
+      createCell('辅料', baseStyle), emptyCell()
     ]);
     
     // Row 3
     wsData.push([
-      '工艺', plan.process, '面料编号', 
-      plan.fabrics[0]?.itemNumber || '', 
-      plan.fabrics[1]?.itemNumber || '', 
-      plan.fabrics[2]?.itemNumber || '', 
-      plan.fabrics[3]?.itemNumber || '', 
-      plan.fabrics[4]?.itemNumber || ''
+      createCell('工艺', baseStyle), createCell(plan.process, baseStyle), createCell('面料编号', baseStyle), 
+      createCell(plan.fabrics[0]?.itemNumber, baseStyle), 
+      createCell(plan.fabrics[1]?.itemNumber, baseStyle), 
+      createCell(plan.fabrics[2]?.itemNumber, baseStyle), 
+      createCell(plan.fabrics[3]?.itemNumber, baseStyle), 
+      createCell(plan.fabrics[4]?.itemNumber, baseStyle)
     ]);
     
     // Row 4
     wsData.push([
-      '', '', '门幅cm', 
-      plan.fabrics[0]?.width || '', 
-      plan.fabrics[1]?.width || '', 
-      plan.fabrics[2]?.width || '', 
-      plan.fabrics[3]?.width || '', 
-      plan.fabrics[4]?.width || ''
+      emptyCell(), emptyCell(), createCell('门幅cm', baseStyle), 
+      createCell(plan.fabrics[0]?.width, baseStyle), 
+      createCell(plan.fabrics[1]?.width, baseStyle), 
+      createCell(plan.fabrics[2]?.width, baseStyle), 
+      createCell(plan.fabrics[3]?.width, baseStyle), 
+      createCell(plan.fabrics[4]?.width, baseStyle)
     ]);
     
     // Row 5
     wsData.push([
-      '', '', '克重g/m²', 
-      plan.fabrics[0]?.weight || '', 
-      plan.fabrics[1]?.weight || '', 
-      plan.fabrics[2]?.weight || '', 
-      plan.fabrics[3]?.weight || '', 
-      plan.fabrics[4]?.weight || ''
+      emptyCell(), emptyCell(), createCell('克重g/m²', baseStyle), 
+      createCell(plan.fabrics[0]?.weight, baseStyle), 
+      createCell(plan.fabrics[1]?.weight, baseStyle), 
+      createCell(plan.fabrics[2]?.weight, baseStyle), 
+      createCell(plan.fabrics[3]?.weight, baseStyle), 
+      createCell(plan.fabrics[4]?.weight, baseStyle)
     ]);
     
     // Row 6
     wsData.push([
-      '颜色', '色号', '品名', 
-      plan.fabrics[0]?.productName || '', 
-      plan.fabrics[1]?.productName || '', 
-      plan.fabrics[2]?.productName || '', 
-      plan.fabrics[3]?.productName || '', 
-      plan.fabrics[4]?.productName || ''
+      createCell('颜色', boldStyle), createCell('色号', boldStyle), createCell('品名', boldStyle), 
+      createCell(plan.fabrics[0]?.productName, baseStyle), 
+      createCell(plan.fabrics[1]?.productName, baseStyle), 
+      createCell(plan.fabrics[2]?.productName, baseStyle), 
+      createCell(plan.fabrics[3]?.productName, baseStyle), 
+      createCell(plan.fabrics[4]?.productName, baseStyle)
     ]);
     
     // Data Rows
     plan.rows.forEach(row => {
       wsData.push([
-        row.colorName, 
-        row.colorCode, 
-        row.notes, 
-        row.quantities[0] || '', 
-        row.quantities[1] || '', 
-        row.quantities[2] || '', 
-        row.quantities[3] || '', 
-        row.quantities[4] || ''
+        createCell(row.colorName, baseStyle), 
+        createCell(row.colorCode, baseStyle), 
+        createCell(row.notes, baseStyle), 
+        createCell(row.quantities[0], baseStyle), 
+        createCell(row.quantities[1], baseStyle), 
+        createCell(row.quantities[2], baseStyle), 
+        createCell(row.quantities[3], baseStyle), 
+        createCell(row.quantities[4], baseStyle)
       ]);
     });
     
     // Total Row
     const totalRowIdx = wsData.length;
     wsData.push([
-      '合计数量', '', '', 
-      calculateRowTotal(plan, 0) || '', 
-      calculateRowTotal(plan, 1) || '', 
-      calculateRowTotal(plan, 2) || '', 
-      calculateRowTotal(plan, 3) || '', 
-      calculateRowTotal(plan, 4) || ''
+      createCell('合计数量', boldStyle), emptyCell(), emptyCell(), 
+      createCell(calculateRowTotal(plan, 0), boldStyle), 
+      createCell(calculateRowTotal(plan, 1), boldStyle), 
+      createCell(calculateRowTotal(plan, 2), boldStyle), 
+      createCell(calculateRowTotal(plan, 3), boldStyle), 
+      createCell(calculateRowTotal(plan, 4), boldStyle)
     ]);
     
     // Notes Row
     const notesRowIdx = wsData.length;
+    const notesStyle = { ...baseStyle, alignment: { vertical: 'top', horizontal: 'left', wrapText: true } };
     wsData.push([
-      '备注：', plan.notes, '', '', '', '', '', ''
+      createCell('备注：', notesStyle), 
+      createCell(plan.notes, notesStyle), 
+      createCell('', notesStyle), createCell('', notesStyle), createCell('', notesStyle), createCell('', notesStyle), createCell('', notesStyle), createCell('', notesStyle)
     ]);
     
     const ws = XLSX.utils.aoa_to_sheet(wsData);
@@ -163,21 +195,40 @@ export default function DyeingPlanPrint({ plan, variant = 'icon' }: DyeingPlanPr
       { s: { r: 2, c: 6 }, e: { r: 2, c: 7 } }, // Accessory
       { s: { r: 3, c: 0 }, e: { r: 5, c: 0 } }, // Process Label
       { s: { r: 3, c: 1 }, e: { r: 5, c: 1 } }, // Process Value
-      { s: { r: totalRowIdx, c: 0 }, e: { r: totalRowIdx, c: 2 } }, // Total Label
+      { s: { r: totalRowIdx, c: 0 }, e: { r: totalRowIdx, c: 1 } }, // Total Label
       { s: { r: notesRowIdx, c: 1 }, e: { r: notesRowIdx, c: 7 } }, // Notes Value
     ];
     
     // Column widths
     ws['!cols'] = [
-      { wch: 15 }, // 颜色/工艺
-      { wch: 15 }, // 色号/编辑区
-      { wch: 15 }, // 品名/标签
-      { wch: 12 }, // 面料1
-      { wch: 12 }, // 面料2
-      { wch: 12 }, // 面料3
-      { wch: 12 }, // 辅料1
-      { wch: 12 }, // 辅料2
+      { wch: 12 }, // 颜色/工艺
+      { wch: 12 }, // 色号/编辑区
+      { wch: 12 }, // 品名/标签
+      { wch: 15 }, // 面料1
+      { wch: 15 }, // 面料2
+      { wch: 15 }, // 面料3
+      { wch: 15 }, // 辅料1
+      { wch: 15 }, // 辅料2
     ];
+
+    // Row heights
+    ws['!rows'] = [
+      { hpt: 40 }, // Title
+      { hpt: 25 }, // Row 1
+      { hpt: 25 }, // Row 2
+      { hpt: 25 }, // Row 3
+      { hpt: 25 }, // Row 4
+      { hpt: 25 }, // Row 5
+      { hpt: 40 }, // Row 6 (品名)
+    ];
+    // Data rows
+    for (let i = 0; i < plan.rows.length; i++) {
+      ws['!rows'].push({ hpt: 25 });
+    }
+    // Total row
+    ws['!rows'].push({ hpt: 25 });
+    // Notes row
+    ws['!rows'].push({ hpt: 60 });
 
     const wb = XLSX.utils.book_new();
     XLSX.utils.book_append_sheet(wb, ws, "计划单");
