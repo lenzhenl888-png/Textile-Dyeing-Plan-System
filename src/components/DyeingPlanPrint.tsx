@@ -134,7 +134,7 @@ export default function DyeingPlanPrint({ plan, variant = 'icon' }: DyeingPlanPr
                       <h1 className="text-2xl font-bold text-center py-4 tracking-[0.2em]">臻林面料染色计划单</h1>
                       
                       <table className="w-full border-collapse text-[11px] text-center border-t-[1.5px] border-l-[1.5px] border-black table-fixed">
-                        <colgroup><col className="w-[10%]" /><col className="w-[10%]" /><col className="w-[15%]" /><col className="w-[13%]" /><col className="w-[13%]" /><col className="w-[13%]" /><col className="w-[13%]" /><col className="w-[13%]" /></colgroup>
+                        <colgroup><col className="w-[10%]" /><col className="w-[10%]" /><col className="w-[10%]" /><col className="w-[14%]" /><col className="w-[14%]" /><col className="w-[14%]" /><col className="w-[14%]" /><col className="w-[14%]" /></colgroup>
                         <tbody>
                           <tr>
                             <td colSpan={2} className="p-1.5 border-r-[1.5px] border-b-[1.5px] border-black align-middle">
@@ -186,12 +186,12 @@ export default function DyeingPlanPrint({ plan, variant = 'icon' }: DyeingPlanPr
                               </td>
                             ))}
                           </tr>
-                          <tr>
+                          <tr className="h-14">
                             <td className="p-1.5 border-r-[1.5px] border-b-[1.5px] border-black font-medium align-middle">颜色</td>
                             <td className="p-1.5 border-r-[1.5px] border-b-[1.5px] border-black font-medium align-middle">色号</td>
                             <td className="p-1.5 border-r-[1.5px] border-b-[1.5px] border-black font-medium align-middle">品名</td>
                             {plan.fabrics.map((f, i) => (
-                              <td key={i} className="p-1.5 border-r-[1.5px] border-b-[1.5px] border-black align-middle">
+                              <td key={i} className="p-1.5 border-r-[1.5px] border-b-[1.5px] border-black align-middle whitespace-pre-wrap">
                                 {f.productName || '-'}
                               </td>
                             ))}

@@ -252,7 +252,7 @@ export default function DyeingPlanForm({ readOnly = false }: { readOnly?: boolea
           <h1 className="text-3xl font-bold text-center mb-6 tracking-widest">臻林面料染色计划单</h1>
           
           <table className="w-full border-collapse text-sm text-center border-t border-l border-black table-fixed min-w-[1000px]">
-            <colgroup><col className="w-[10%]" /><col className="w-[10%]" /><col className="w-[15%]" /><col className="w-[11.4%]" /><col className="w-[11.4%]" /><col className="w-[11.4%]" /><col className="w-[11.4%]" /><col className="w-[11.4%]" /><col className="w-[8%]" /></colgroup>
+            <colgroup><col className="w-[10%]" /><col className="w-[10%]" /><col className="w-[10%]" /><col className="w-[12.4%]" /><col className="w-[12.4%]" /><col className="w-[12.4%]" /><col className="w-[12.4%]" /><col className="w-[12.4%]" /><col className="w-[8%]" /></colgroup>
             <tbody>
               {/* Row 1: Header Info */}
               <tr>
@@ -373,16 +373,17 @@ export default function DyeingPlanForm({ readOnly = false }: { readOnly?: boolea
               </tr>
 
               {/* Row 6: 颜色, 色号, 品名 */}
-              <tr>
+              <tr className="h-14">
                 <td className="p-2 border-r border-b border-black font-medium align-middle">颜色</td>
                 <td className="p-2 border-r border-b border-black font-medium align-middle">色号</td>
                 <td className="p-2 border-r border-b border-black font-medium align-middle">品名</td>
                 {formData.fabrics?.map((fabric, i) => (
                   <td key={i} className="p-2 border-r border-b border-black align-middle">
-                    <input 
+                    <textarea 
                       value={fabric.productName}
                       onChange={(e) => handleFabricChange(i, 'productName', e.target.value)}
-                      className="w-full outline-none bg-transparent text-center" 
+                      className="w-full outline-none bg-transparent text-center resize-none leading-tight align-middle" 
+                      rows={2}
                       placeholder="编辑区"
                     />
                   </td>
