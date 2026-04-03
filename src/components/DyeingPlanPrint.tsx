@@ -1,8 +1,9 @@
 import React, { useState, useRef } from 'react';
-import { FileDown, Printer, X, Eye } from 'lucide-react';
+import { FileDown, Printer, X, Eye, FileSpreadsheet } from 'lucide-react';
 import { DyeingPlan } from '../services/storage';
 import jsPDF from 'jspdf';
 import html2canvas from 'html2canvas';
+import * as XLSX from 'xlsx';
 import { motion, AnimatePresence } from 'motion/react';
 import { cn } from '../lib/utils';
 
@@ -56,6 +57,133 @@ export default function DyeingPlanPrint({ plan, variant = 'icon' }: DyeingPlanPr
     }
   };
 
+  const handleExportExcel = () => {
+    const wsData = [];
+    
+    // Row 0
+    wsData.push(['臻林面料染色计划单', '', '', '', '', '', '', '']);
+    
+    // Row 1
+    wsData.push([
+      `客户：${plan.customer}`, '', 
+      `款号：${plan.styleNumber}`, '', 
+      `日期：${plan.date}`, '', 
+      `预计交期：${plan.deliveryDate}`, ''
+    ]);
+    
+    // Row 2
+    wsData.push([
+      '合同号', plan.contractNumber, '', 
+      '主面料', '', '', 
+      '辅料', ''
+    ]);
+    
+    // Row 3
+    wsData.push([
+      '工艺', plan.process, '面料编号', 
+      plan.fabrics[0]?.itemNumber || '', 
+      plan.fabrics[1]?.itemNumber || '', 
+      plan.fabrics[2]?.itemNumber || '', 
+      plan.fabrics[3]?.itemNumber || '', 
+      plan.fabrics[4]?.itemNumber || ''
+    ]);
+    
+    // Row 4
+    wsData.push([
+      '', '', '门幅cm', 
+      plan.fabrics[0]?.width || '', 
+      plan.fabrics[1]?.width || '', 
+      plan.fabrics[2]?.width || '', 
+      plan.fabrics[3]?.width || '', 
+      plan.fabrics[4]?.width || ''
+    ]);
+    
+    // Row 5
+    wsData.push([
+      '', '', '克重g/m²', 
+      plan.fabrics[0]?.weight || '', 
+      plan.fabrics[1]?.weight || '', 
+      plan.fabrics[2]?.weight || '', 
+      plan.fabrics[3]?.weight || '', 
+      plan.fabrics[4]?.weight || ''
+    ]);
+    
+    // Row 6
+    wsData.push([
+      '颜色', '色号', '品名', 
+      plan.fabrics[0]?.productName || '', 
+      plan.fabrics[1]?.productName || '', 
+      plan.fabrics[2]?.productName || '', 
+      plan.fabrics[3]?.productName || '', 
+      plan.fabrics[4]?.productName || ''
+    ]);
+    
+    // Data Rows
+    plan.rows.forEach(row => {
+      wsData.push([
+        row.colorName, 
+        row.colorCode, 
+        row.notes, 
+        row.quantities[0] || '', 
+        row.quantities[1] || '', 
+        row.quantities[2] || '', 
+        row.quantities[3] || '', 
+        row.quantities[4] || ''
+      ]);
+    });
+    
+    // Total Row
+    const totalRowIdx = wsData.length;
+    wsData.push([
+      '合计数量', '', '', 
+      calculateRowTotal(plan, 0) || '', 
+      calculateRowTotal(plan, 1) || '', 
+      calculateRowTotal(plan, 2) || '', 
+      calculateRowTotal(plan, 3) || '', 
+      calculateRowTotal(plan, 4) || ''
+    ]);
+    
+    // Notes Row
+    const notesRowIdx = wsData.length;
+    wsData.push([
+      '备注：', plan.notes, '', '', '', '', '', ''
+    ]);
+    
+    const ws = XLSX.utils.aoa_to_sheet(wsData);
+    
+    // Merges
+    ws['!merges'] = [
+      { s: { r: 0, c: 0 }, e: { r: 0, c: 7 } }, // Title
+      { s: { r: 1, c: 0 }, e: { r: 1, c: 1 } }, // Customer
+      { s: { r: 1, c: 2 }, e: { r: 1, c: 3 } }, // Style
+      { s: { r: 1, c: 4 }, e: { r: 1, c: 5 } }, // Date
+      { s: { r: 1, c: 6 }, e: { r: 1, c: 7 } }, // Delivery
+      { s: { r: 2, c: 1 }, e: { r: 2, c: 2 } }, // Contract
+      { s: { r: 2, c: 3 }, e: { r: 2, c: 5 } }, // Main Fabric
+      { s: { r: 2, c: 6 }, e: { r: 2, c: 7 } }, // Accessory
+      { s: { r: 3, c: 0 }, e: { r: 5, c: 0 } }, // Process Label
+      { s: { r: 3, c: 1 }, e: { r: 5, c: 1 } }, // Process Value
+      { s: { r: totalRowIdx, c: 0 }, e: { r: totalRowIdx, c: 2 } }, // Total Label
+      { s: { r: notesRowIdx, c: 1 }, e: { r: notesRowIdx, c: 7 } }, // Notes Value
+    ];
+    
+    // Column widths
+    ws['!cols'] = [
+      { wch: 15 }, // 颜色/工艺
+      { wch: 15 }, // 色号/编辑区
+      { wch: 15 }, // 品名/标签
+      { wch: 12 }, // 面料1
+      { wch: 12 }, // 面料2
+      { wch: 12 }, // 面料3
+      { wch: 12 }, // 辅料1
+      { wch: 12 }, // 辅料2
+    ];
+
+    const wb = XLSX.utils.book_new();
+    XLSX.utils.book_append_sheet(wb, ws, "计划单");
+    XLSX.writeFile(wb, `${plan.customer}_${plan.styleNumber}_计划单.xlsx`);
+  };
+
   return (
     <>
       {variant === 'icon' ? (
@@ -105,6 +233,13 @@ export default function DyeingPlanPrint({ plan, variant = 'icon' }: DyeingPlanPr
                   </div>
                 </div>
                 <div className="flex items-center gap-3">
+                  <button
+                    onClick={handleExportExcel}
+                    className="flex items-center gap-2 px-6 py-2.5 bg-emerald-600 text-white rounded-xl hover:bg-emerald-700 transition-all shadow-lg shadow-emerald-200 font-bold"
+                  >
+                    <FileSpreadsheet className="w-4 h-4" />
+                    导出 Excel
+                  </button>
                   <button
                     onClick={handlePrint}
                     disabled={isExporting}

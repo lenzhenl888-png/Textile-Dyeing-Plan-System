@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useRef } from 'react';
-import { Plus, Trash2, Edit2, Save, X, Upload, FileSpreadsheet } from 'lucide-react';
+import { Plus, Trash2, Edit2, Save, X, Upload, FileSpreadsheet, Search } from 'lucide-react';
 import { storage, Fabric } from '../services/storage';
 import * as XLSX from 'xlsx';
 
@@ -8,6 +8,7 @@ export default function FabricManager() {
   const [isAdding, setIsAdding] = useState(false);
   const [editingId, setEditingId] = useState<string | null>(null);
   const [deleteConfirmId, setDeleteConfirmId] = useState<string | null>(null);
+  const [searchQuery, setSearchQuery] = useState('');
   const fileInputRef = useRef<HTMLInputElement>(null);
   const [formData, setFormData] = useState({ 
     name: '', 
@@ -23,7 +24,7 @@ export default function FabricManager() {
   }, []);
 
   const loadFabrics = () => {
-    setFabrics(storage.getFabrics());
+    setFabrics([...storage.getFabrics()].reverse());
   };
 
   const handleSubmit = (e: React.FormEvent) => {
@@ -124,6 +125,15 @@ export default function FabricManager() {
     reader.readAsBinaryString(file);
   };
 
+  const filteredFabrics = fabrics.filter(fabric => 
+    fabric.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
+    fabric.code.toLowerCase().includes(searchQuery.toLowerCase()) ||
+    (fabric.width && fabric.width.toLowerCase().includes(searchQuery.toLowerCase())) ||
+    (fabric.weight && fabric.weight.toLowerCase().includes(searchQuery.toLowerCase())) ||
+    (fabric.field1 && fabric.field1.toLowerCase().includes(searchQuery.toLowerCase())) ||
+    (fabric.field2 && fabric.field2.toLowerCase().includes(searchQuery.toLowerCase()))
+  );
+
   return (
     <div className="space-y-6">
       <div className="flex items-center justify-between">
@@ -132,6 +142,16 @@ export default function FabricManager() {
           <p className="text-sm text-gray-500 mt-1">管理您的面料主列表和规格。</p>
         </div>
         <div className="flex items-center gap-3">
+          <div className="relative">
+            <Search className="w-4 h-4 text-gray-400 absolute left-3 top-1/2 -translate-y-1/2" />
+            <input
+              type="text"
+              placeholder="搜索面料..."
+              value={searchQuery}
+              onChange={(e) => setSearchQuery(e.target.value)}
+              className="pl-9 pr-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 outline-none transition-all text-sm w-64"
+            />
+          </div>
           <input 
             type="file" 
             ref={fileInputRef} 
@@ -271,14 +291,14 @@ export default function FabricManager() {
               </tr>
             </thead>
             <tbody className="divide-y divide-gray-200">
-              {fabrics.length === 0 ? (
+              {filteredFabrics.length === 0 ? (
                 <tr>
                   <td colSpan={7} className="px-6 py-12 text-center text-gray-500 italic">
-                    未找到面料。请添加您的第一个面料以开始。
+                    {searchQuery ? '未找到匹配的面料。' : '未找到面料。请添加您的第一个面料以开始。'}
                   </td>
                 </tr>
               ) : (
-                fabrics.map((fabric) => (
+                filteredFabrics.map((fabric) => (
                   <tr key={fabric.id} className="hover:bg-gray-50 transition-colors group">
                     <td className="px-6 py-4 font-medium text-gray-900">{fabric.name}</td>
                     <td className="px-6 py-4 text-sm text-gray-600 font-mono">{fabric.code}</td>
