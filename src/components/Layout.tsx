@@ -2,6 +2,7 @@ import React from 'react';
 import { Link, useLocation } from 'react-router-dom';
 import { LayoutDashboard, Database, PlusCircle, LogOut, User, ListTodo, Calculator } from 'lucide-react';
 import { cn } from '../lib/utils';
+import { useAuth } from '../contexts/AuthContext';
 
 interface LayoutProps {
   children: React.ReactNode;
@@ -10,6 +11,7 @@ interface LayoutProps {
 
 export default function Layout({ children, user }: LayoutProps) {
   const location = useLocation();
+  const { logout } = useAuth();
 
   const navItems = [
     { name: '仪表板', path: '/', icon: LayoutDashboard },
@@ -32,20 +34,21 @@ export default function Layout({ children, user }: LayoutProps) {
           </div>
 
           <div className="flex items-center gap-4">
-            <div className="hidden sm:flex items-center gap-2 px-3 py-1 bg-amber-50 border border-amber-200 rounded-full">
-              <div className="w-2 h-2 bg-amber-500 rounded-full animate-pulse" />
-              <span className="text-[10px] font-bold text-amber-700 uppercase tracking-wider">本地存储模式</span>
-            </div>
             <div className="flex items-center gap-2 text-sm text-gray-600 pl-4 border-l border-gray-100">
-              <User className="w-4 h-4" />
-              <span>{user?.email}</span>
+              {user?.photoURL ? (
+                <img src={user.photoURL} alt="User avatar" className="w-6 h-6 rounded-full" referrerPolicy="no-referrer" />
+              ) : (
+                <User className="w-4 h-4" />
+              )}
+              <span className="hidden sm:inline">{user?.displayName || user?.email}</span>
             </div>
             <button
-              onClick={() => window.location.reload()}
-              className="p-2 text-gray-400 hover:text-red-600 transition-colors"
-              title="刷新"
+              onClick={logout}
+              className="p-2 text-gray-400 hover:text-red-600 transition-colors flex items-center gap-2"
+              title="退出登录"
             >
               <LogOut className="w-5 h-5" />
+              <span className="hidden sm:inline text-sm font-medium">退出</span>
             </button>
           </div>
         </div>

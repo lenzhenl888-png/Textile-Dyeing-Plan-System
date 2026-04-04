@@ -1,115 +1,20 @@
 rules_version = '2';
+
 service cloud.firestore {
   match /databases/{database}/documents {
-    // ===============================================================
-    // Assumed Data Model
-    // ===============================================================
-    //
-    // Collection: fabrics
-    // Fields:
-    //   - name: string (required)
-    //   - itemNumber: string (required)
-    //   - availableColors: list of strings (optional)
-    //   - createdAt: timestamp (required)
-    //   - updatedAt: timestamp (required)
-    //
-    // Collection: dyeingPlans
-    // Fields:
-    //   - contractNumber: string (required)
-    //   - fabricId: string (required)
-    //   - fabricName: string (optional)
-    //   - fabricItemNumber: string (optional)
-    //   - color: string (required)
-    //   - colorRequirements: string (optional)
-    //   - quantity: number (optional)
-    //   - width: string (optional)
-    //   - weight: string (optional)
-    //   - time: string (optional)
-    //   - productNumber: string (optional)
-    //   - notes: string (optional)
-    //   - createdBy: string (required)
-    //   - createdAt: timestamp (required)
-    //   - updatedAt: timestamp (required)
-    //
-    // ===============================================================
-
-    // ===============================================================
-    // Helper Functions
-    // ===============================================================
-
+    // Helper function to check if the user is authenticated
     function isAuthenticated() {
       return request.auth != null;
     }
 
-    function isOwner(userId) {
-      return isAuthenticated() && request.auth.uid == userId;
+    // Allow read and write access to the 'plans' collection only if the user is authenticated
+    match /plans/{planId} {
+      allow read, write: if isAuthenticated();
     }
 
-    function isDocOwner() {
-      return isAuthenticated() && request.auth.uid == resource.data.createdBy;
-    }
-
-    function isAdmin() {
-      return isAuthenticated() &&
-        (get(/databases/$(database)/documents/users/$(request.auth.uid)).data.role == 'admin' ||
-          (request.auth.token.email == "len.zhenl888@gmail.com" && request.auth.token.email_verified == true));
-    }
-
-    function hasRequiredFields(fields) {
-      return request.resource.data.keys().hasAll(fields);
-    }
-
-    function hasOnlyAllowedFields(fields) {
-      return request.resource.data.keys().hasOnly(fields);
-    }
-
-    function isValidFabric(data) {
-      return data.name is string && data.name.size() > 0 && data.name.size() < 200 &&
-             data.itemNumber is string && data.itemNumber.size() > 0 && data.itemNumber.size() < 100 &&
-             (!('availableColors' in data) || data.availableColors is list) &&
-             data.createdAt is timestamp &&
-             data.updatedAt is timestamp;
-    }
-
-    function isValidDyeingPlan(data) {
-      return data.contractNumber is string && data.contractNumber.size() > 0 && data.contractNumber.size() < 100 &&
-             data.fabricId is string &&
-             data.color is string &&
-             (!('quantity' in data) || data.quantity is number) &&
-             (!('width' in data) || data.width is string) &&
-             (!('weight' in data) || data.weight is string) &&
-             (!('time' in data) || data.time is string) &&
-             (!('productNumber' in data) || data.productNumber is string) &&
-             data.createdBy is string &&
-             data.createdAt is timestamp &&
-             data.updatedAt is timestamp;
-    }
-
-    // ===============================================================
-    // Rules
-    // ===============================================================
-
-    match /users/{userId} {
-      allow read: if isOwner(userId) || isAdmin();
-      allow create, update: if isAdmin();
-    }
-
+    // Allow read and write access to the 'fabrics' collection only if the user is authenticated
     match /fabrics/{fabricId} {
-      allow read: if isAuthenticated();
-      allow create, update: if isAuthenticated(); // For now, let any authenticated user add fabrics
-      allow delete: if isAdmin();
-    }
-
-    match /dyeingPlans/{planId} {
-      allow read: if isAuthenticated();
-      allow create: if isAuthenticated() && isValidDyeingPlan(request.resource.data) && request.resource.data.createdBy == request.auth.uid;
-      allow update: if isAuthenticated() && isValidDyeingPlan(request.resource.data) && (isDocOwner() || isAdmin());
-      allow delete: if isAdmin();
-    }
-
-    // Default deny
-    match /{path=**} {
-      allow read, write: if false;
+      allow read, write: if isAuthenticated();
     }
   }
 }
