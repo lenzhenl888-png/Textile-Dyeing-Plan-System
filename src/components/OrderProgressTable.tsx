@@ -23,14 +23,14 @@ export default function OrderProgressTable() {
     loadPlans();
   }, []);
 
-  const loadPlans = () => {
-    const loadedPlans = storage.getPlans();
+  const loadPlans = async () => {
+    const loadedPlans = await storage.getPlans();
     // Sort by created date descending
     loadedPlans.sort((a, b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime());
     setPlans(loadedPlans);
   };
 
-  const toggleProgress = (planId: string, step: string) => {
+  const toggleProgress = async (planId: string, step: string) => {
     const planIndex = plans.findIndex(p => p.id === planId);
     if (planIndex === -1) return;
 
@@ -46,7 +46,7 @@ export default function OrderProgressTable() {
       }
     };
 
-    storage.savePlan(updatedPlan);
+    await storage.savePlan(updatedPlan);
     
     // Update local state
     const newPlans = [...plans];

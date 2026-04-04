@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { useNavigate, useParams } from 'react-router-dom';
 import { Save, ArrowLeft, AlertCircle, Plus, Trash2, Eraser } from 'lucide-react';
-import { storage, DyeingPlan, FabricDetail, ColorRow } from '../services/storage';
+import { storage, DyeingPlan, FabricDetail, ColorRow, Fabric } from '../services/storage';
 import { cn } from '../lib/utils';
 import { v4 as uuidv4 } from 'uuid';
 
@@ -30,6 +30,7 @@ export default function DyeingPlanForm({ readOnly = false }: { readOnly?: boolea
   const [saving, setSaving] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [showClearConfirm, setShowClearConfirm] = useState(false);
+  const [dbFabrics, setDbFabrics] = useState<Fabric[]>([]);
 
   const [formData, setFormData] = useState<Partial<DyeingPlan>>({
     customer: '',
@@ -50,8 +51,11 @@ export default function DyeingPlanForm({ readOnly = false }: { readOnly?: boolea
       const draftKey = id ? `${DRAFT_KEY}_${id}` : DRAFT_KEY;
       const draft = localStorage.getItem(draftKey);
 
+      const loadedFabrics = await storage.getFabrics();
+      setDbFabrics(loadedFabrics);
+
       if (id) {
-        const plan = storage.getPlan(id);
+        const plan = await storage.getPlan(id);
         if (plan) {
           if (draft) {
             try {
@@ -119,7 +123,6 @@ export default function DyeingPlanForm({ readOnly = false }: { readOnly?: boolea
     // Auto-fill from fabric database when itemNumber changes
     if (field === 'itemNumber') {
       if (value) {
-        const dbFabrics = storage.getFabrics();
         const matchedFabric = dbFabrics.find(f => f.code === value);
         if (matchedFabric) {
           updatedFabric.productName = matchedFabric.name || updatedFabric.productName;
@@ -166,7 +169,7 @@ export default function DyeingPlanForm({ readOnly = false }: { readOnly?: boolea
     }, 0);
   };
 
-  const handleSubmit = (e: React.FormEvent) => {
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!formData.customer) {
       setError('请填写客户名称');
@@ -177,7 +180,7 @@ export default function DyeingPlanForm({ readOnly = false }: { readOnly?: boolea
     setError(null);
 
     try {
-      storage.savePlan(formData);
+      await storage.savePlan(formData);
       const draftKey = id ? `${DRAFT_KEY}_${id}` : DRAFT_KEY;
       localStorage.removeItem(draftKey);
       navigate('/');

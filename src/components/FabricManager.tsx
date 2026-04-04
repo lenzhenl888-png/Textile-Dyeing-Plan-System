@@ -23,15 +23,16 @@ export default function FabricManager() {
     loadFabrics();
   }, []);
 
-  const loadFabrics = () => {
-    setFabrics([...storage.getFabrics()].reverse());
+  const loadFabrics = async () => {
+    const data = await storage.getFabrics();
+    setFabrics([...data].reverse());
   };
 
-  const handleSubmit = (e: React.FormEvent) => {
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!formData.name || !formData.code) return;
 
-    storage.saveFabric({
+    await storage.saveFabric({
       id: editingId || undefined,
       name: formData.name,
       code: formData.code,
@@ -60,8 +61,8 @@ export default function FabricManager() {
     setIsAdding(true);
   };
 
-  const confirmDelete = (id: string) => {
-    storage.deleteFabric(id);
+  const confirmDelete = async (id: string) => {
+    await storage.deleteFabric(id);
     loadFabrics();
     setDeleteConfirmId(null);
   };
@@ -71,7 +72,7 @@ export default function FabricManager() {
     if (!file) return;
 
     const reader = new FileReader();
-    reader.onload = (evt) => {
+    reader.onload = async (evt) => {
       try {
         const bstr = evt.target?.result;
         const wb = XLSX.read(bstr, { type: 'binary' });
@@ -79,11 +80,11 @@ export default function FabricManager() {
         const ws = wb.Sheets[wsname];
         const data = XLSX.utils.sheet_to_json(ws);
         
-        const existingFabrics = storage.getFabrics();
+        const existingFabrics = await storage.getFabrics();
         let importedCount = 0;
         let updatedCount = 0;
 
-        data.forEach((row: any) => {
+        for (const row of data as any[]) {
           // Map Excel columns to Fabric properties
           const name = row['面料名称'] || row['品名'] || row['Name'] || row['name'];
           const code = row['编号'] || row['货号'] || row['Code'] || row['code'] || row['itemNumber'];
@@ -91,7 +92,7 @@ export default function FabricManager() {
           if (name && code) {
             const existingFabric = existingFabrics.find(f => f.code === String(code));
             
-            storage.saveFabric({
+            await storage.saveFabric({
               id: existingFabric?.id, // If it exists, this will update it instead of creating a new one
               name: String(name),
               code: String(code),
@@ -107,7 +108,7 @@ export default function FabricManager() {
               importedCount++;
             }
           }
-        });
+        }
         
         if (importedCount > 0 || updatedCount > 0) {
           loadFabrics();

@@ -20,13 +20,14 @@ export default function DyeingPlanList() {
     loadPlans();
   }, []);
 
-  const loadPlans = () => {
-    setPlans(storage.getPlans().sort((a, b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime()));
+  const loadPlans = async () => {
+    const data = await storage.getPlans();
+    setPlans(data.sort((a, b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime()));
     setLoading(false);
   };
 
-  const confirmDelete = (id: string) => {
-    storage.deletePlan(id);
+  const confirmDelete = async (id: string) => {
+    await storage.deletePlan(id);
     loadPlans();
     setDeleteConfirmId(null);
   };

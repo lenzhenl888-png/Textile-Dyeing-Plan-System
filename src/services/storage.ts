@@ -1,4 +1,6 @@
 import { v4 as uuidv4 } from 'uuid';
+import { db } from '../lib/firebase';
+import { collection, getDocs, doc, setDoc, deleteDoc, getDoc } from 'firebase/firestore';
 
 export interface Fabric {
   id: string;
@@ -45,68 +47,48 @@ export interface DyeingPlan {
   updatedAt: string;
 }
 
-const FABRICS_KEY = 'dyeing_plan_pro_fabrics';
-const PLANS_KEY = 'dyeing_plan_pro_plans';
-
 export const storage = {
   // Fabrics
-  getFabrics: (): Fabric[] => {
-    const data = localStorage.getItem(FABRICS_KEY);
-    return data ? JSON.parse(data) : [];
+  getFabrics: async (): Promise<Fabric[]> => {
+    const snapshot = await getDocs(collection(db, 'fabrics'));
+    return snapshot.docs.map(doc => doc.data() as Fabric);
   },
-  saveFabric: (fabric: Omit<Fabric, 'id'> & { id?: string }): Fabric => {
-    const fabrics = storage.getFabrics();
+  saveFabric: async (fabric: Omit<Fabric, 'id'> & { id?: string }): Promise<Fabric> => {
     const newFabric = {
       ...fabric,
       id: fabric.id || uuidv4(),
     } as Fabric;
-
-    if (fabric.id) {
-      const index = fabrics.findIndex(f => f.id === fabric.id);
-      if (index !== -1) fabrics[index] = newFabric;
-    } else {
-      fabrics.push(newFabric);
-    }
-
-    localStorage.setItem(FABRICS_KEY, JSON.stringify(fabrics));
+    await setDoc(doc(db, 'fabrics', newFabric.id), newFabric);
     return newFabric;
   },
-  deleteFabric: (id: string) => {
-    const fabrics = storage.getFabrics().filter(f => f.id !== id);
-    localStorage.setItem(FABRICS_KEY, JSON.stringify(fabrics));
+  deleteFabric: async (id: string): Promise<void> => {
+    await deleteDoc(doc(db, 'fabrics', id));
   },
 
   // Dyeing Plans
-  getPlans: (): DyeingPlan[] => {
-    const data = localStorage.getItem(PLANS_KEY);
-    return data ? JSON.parse(data) : [];
+  getPlans: async (): Promise<DyeingPlan[]> => {
+    const snapshot = await getDocs(collection(db, 'plans'));
+    return snapshot.docs.map(doc => doc.data() as DyeingPlan);
   },
-  getPlan: (id: string): DyeingPlan | undefined => {
-    return storage.getPlans().find(p => p.id === id);
+  getPlan: async (id: string): Promise<DyeingPlan | undefined> => {
+    const docRef = doc(db, 'plans', id);
+    const snapshot = await getDoc(docRef);
+    if (snapshot.exists()) {
+      return snapshot.data() as DyeingPlan;
+    }
+    return undefined;
   },
-  savePlan: (plan: any): DyeingPlan => {
-    const plans = storage.getPlans();
-    const isUpdate = !!plan.id;
-    
+  savePlan: async (plan: any): Promise<DyeingPlan> => {
     const newPlan = {
       ...plan,
       id: plan.id || uuidv4(),
       createdAt: plan.createdAt || new Date().toISOString(),
       updatedAt: new Date().toISOString(),
     } as DyeingPlan;
-
-    if (isUpdate) {
-      const index = plans.findIndex(p => p.id === plan.id);
-      if (index !== -1) plans[index] = newPlan;
-    } else {
-      plans.push(newPlan);
-    }
-
-    localStorage.setItem(PLANS_KEY, JSON.stringify(plans));
+    await setDoc(doc(db, 'plans', newPlan.id), newPlan);
     return newPlan;
   },
-  deletePlan: (id: string) => {
-    const plans = storage.getPlans().filter(p => p.id !== id);
-    localStorage.setItem(PLANS_KEY, JSON.stringify(plans));
+  deletePlan: async (id: string): Promise<void> => {
+    await deleteDoc(doc(db, 'plans', id));
   }
 };
