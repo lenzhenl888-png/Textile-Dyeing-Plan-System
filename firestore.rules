@@ -2,19 +2,23 @@ rules_version = '2';
 
 service cloud.firestore {
   match /databases/{database}/documents {
-    // Helper function to check if the user is authenticated
-    function isAuthenticated() {
-      return request.auth != null;
+    // Helper function to check if the user is authorized via email whitelist
+    function isAuthorized() {
+      return request.auth != null && 
+             request.auth.token.email in [
+               'len.zhenl888@gmail.com',
+               'lz1041953343@gmail.com'
+             ];
     }
 
-    // Allow read and write access to the 'plans' collection only if the user is authenticated
+    // Allow read and write access to the 'plans' collection only if the user is authorized
     match /plans/{planId} {
-      allow read, write: if isAuthenticated();
+      allow read, write: if isAuthorized();
     }
 
-    // Allow read and write access to the 'fabrics' collection only if the user is authenticated
+    // Allow read and write access to the 'fabrics' collection only if the user is authorized
     match /fabrics/{fabricId} {
-      allow read, write: if isAuthenticated();
+      allow read, write: if isAuthorized();
     }
   }
 }

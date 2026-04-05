@@ -13,7 +13,11 @@ export default function Login() {
       setLoading(true);
       await loginWithGoogle();
     } catch (err: any) {
-      setError('登录失败，请重试。' + (err.message || ''));
+      if (err.message === '您没有访问臻林纺织内部系统的权限') {
+        setError(err.message);
+      } else {
+        setError('登录失败，请重试。' + (err.message || ''));
+      }
     } finally {
       setLoading(false);
     }
