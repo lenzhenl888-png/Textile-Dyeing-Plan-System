@@ -295,66 +295,60 @@ export default function DyeingPlanList() {
                 </button>
               </div>
               
-              <div className="p-5 overflow-y-auto space-y-4">
+              <div className="p-5 overflow-y-auto space-y-6">
                 <div>
                   <div className="text-xs text-gray-500 mb-1">客户</div>
-                  <div className="text-base font-bold text-gray-900">{selectedPlan.customer || '-'}</div>
+                  <div className="text-xl font-black text-gray-900">{selectedPlan.customer || '-'}</div>
                 </div>
 
-                <div className="grid grid-cols-2 gap-4">
-                  <div>
-                    <div className="text-xs text-gray-500 mb-1">合同号</div>
-                    <div className="text-sm font-medium text-gray-900">{selectedPlan.contractNumber || '-'}</div>
-                  </div>
-                  <div>
-                    <div className="text-xs text-gray-500 mb-1">款号</div>
-                    <div className="text-sm font-medium text-gray-900">{selectedPlan.styleNumber || '-'}</div>
-                  </div>
-                </div>
+                <div className="space-y-4">
+                  {selectedPlan.fabrics.map((fabric, index) => {
+                    if (!fabric.itemNumber && !fabric.productName) return null;
 
-                <div className="grid grid-cols-2 gap-4">
-                  <div>
-                    <div className="text-xs text-gray-500 mb-1">制单日期</div>
-                    <div className="text-sm text-gray-900 flex items-center gap-1.5">
-                      <Calendar className="w-4 h-4 text-gray-400" />
-                      {selectedPlan.date || '-'}
-                    </div>
-                  </div>
-                  <div>
-                    <div className="text-xs text-gray-500 mb-1">交期</div>
-                    <div className="text-sm text-gray-900 flex items-center gap-1.5">
-                      <Clock className="w-4 h-4 text-gray-400" />
-                      {selectedPlan.deliveryDate || '-'}
-                    </div>
-                  </div>
-                </div>
+                    const relevantRows = selectedPlan.rows.filter(row => {
+                      const q = parseFloat(row.quantities[index] as string);
+                      return !isNaN(q) && q > 0;
+                    });
 
-                <div>
-                  <div className="text-xs text-gray-500 mb-2">面料信息</div>
-                  <div className="space-y-2">
-                    {selectedPlan.fabrics.map((f, i) => f.itemNumber && (
-                      <div key={i} className="bg-gray-50 p-2 rounded-lg border border-gray-100 text-sm">
-                        <span className="font-bold text-gray-700 mr-2">面料 {i+1}:</span>
-                        {f.itemNumber}
-                      </div>
-                    ))}
-                  </div>
-                </div>
-
-                <div>
-                  <div className="text-xs text-gray-500 mb-2">颜色及数量 ({selectedPlan.rows.length} 行)</div>
-                  <div className="bg-gray-50 rounded-lg border border-gray-100 overflow-hidden">
-                    <div className="max-h-32 overflow-y-auto p-2 space-y-1">
-                      {selectedPlan.rows.map((row, i) => (
-                        <div key={i} className="flex justify-between text-sm py-1 border-b border-gray-100 last:border-0">
-                          <span className="text-gray-700">{row.colorName || '未命名颜色'}</span>
-                          <span className="font-medium text-gray-900">
-                            {row.quantities.reduce((sum, q) => sum + (parseFloat(q as string) || 0), 0)}
-                          </span>
+                    return (
+                      <div key={index} className="bg-white rounded-xl border border-gray-200 overflow-hidden shadow-sm">
+                        <div className="bg-gray-50 p-3 border-b border-gray-200">
+                          <div className="flex items-center gap-2">
+                            <span className="text-xs font-bold text-indigo-700 bg-indigo-100 px-2 py-0.5 rounded">面料 {index + 1}</span>
+                            <span className="font-bold text-gray-900">{fabric.itemNumber || '-'}</span>
+                          </div>
+                          {fabric.productName && (
+                            <div className="text-sm text-gray-600 mt-1.5 font-medium">{fabric.productName}</div>
+                          )}
                         </div>
-                      ))}
-                    </div>
-                  </div>
+                        
+                        {relevantRows.length > 0 ? (
+                          <div className="p-0">
+                            <table className="w-full text-sm text-left">
+                              <thead className="bg-white text-xs text-gray-400 border-b border-gray-100">
+                                <tr>
+                                  <th className="px-4 py-2 font-medium">颜色</th>
+                                  <th className="px-4 py-2 font-medium text-right">数量</th>
+                                </tr>
+                              </thead>
+                              <tbody className="divide-y divide-gray-50">
+                                {relevantRows.map((row, rIndex) => (
+                                  <tr key={rIndex} className="hover:bg-gray-50/50 transition-colors">
+                                    <td className="px-4 py-2.5 text-gray-700">{row.colorName || '未命名颜色'}</td>
+                                    <td className="px-4 py-2.5 text-gray-900 font-bold text-right">
+                                      {row.quantities[index]}
+                                    </td>
+                                  </tr>
+                                ))}
+                              </tbody>
+                            </table>
+                          </div>
+                        ) : (
+                          <div className="p-4 text-sm text-gray-400 italic text-center">无对应颜色数量</div>
+                        )}
+                      </div>
+                    );
+                  })}
                 </div>
               </div>
 
