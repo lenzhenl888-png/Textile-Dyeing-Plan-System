@@ -1,6 +1,6 @@
 import React from 'react';
 import { Link, useLocation } from 'react-router-dom';
-import { LayoutDashboard, Database, PlusCircle, LogOut, User, ListTodo, Calculator } from 'lucide-react';
+import { LayoutDashboard, Database, PlusCircle, LogOut, User, ListTodo, Calculator, Bell, Users } from 'lucide-react';
 import { cn } from '../lib/utils';
 import { useAuth } from '../contexts/AuthContext';
 
@@ -15,9 +15,11 @@ export default function Layout({ children, user }: LayoutProps) {
 
   const navItems = [
     { name: '仪表板', path: '/', icon: LayoutDashboard },
+    { name: '提醒事项', path: '/reminders', icon: Bell },
     { name: '新建计划', path: '/new-plan', icon: PlusCircle },
     { name: '订单进度表', path: '/progress', icon: ListTodo },
     { name: '面料数据库', path: '/fabrics', icon: Database },
+    { name: '联系人数据库', path: '/contacts', icon: Users },
     { name: '投坯量计算器', path: '/calculator', icon: Calculator },
   ];
 

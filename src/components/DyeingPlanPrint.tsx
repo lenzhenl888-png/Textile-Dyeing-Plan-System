@@ -10,9 +10,10 @@ import { cn } from '../lib/utils';
 interface DyeingPlanPrintProps {
   plan: DyeingPlan;
   variant?: 'icon' | 'button';
+  className?: string;
 }
 
-export default function DyeingPlanPrint({ plan, variant = 'icon' }: DyeingPlanPrintProps) {
+export default function DyeingPlanPrint({ plan, variant = 'icon', className }: DyeingPlanPrintProps) {
   const [showPreview, setShowPreview] = useState(false);
   const [isExporting, setIsExporting] = useState(false);
   const pdfRef = useRef<HTMLDivElement>(null);
@@ -243,7 +244,7 @@ export default function DyeingPlanPrint({ plan, variant = 'icon' }: DyeingPlanPr
             e.stopPropagation();
             setShowPreview(true);
           }}
-          className="p-2 text-gray-400 hover:text-indigo-600 hover:bg-indigo-50 rounded-lg transition-all"
+          className={cn("p-2 text-gray-400 hover:text-indigo-600 hover:bg-indigo-50 rounded-lg transition-all", className)}
           title="打印预览"
         >
           <Printer className="w-4 h-4" />
@@ -254,7 +255,7 @@ export default function DyeingPlanPrint({ plan, variant = 'icon' }: DyeingPlanPr
             e.stopPropagation();
             setShowPreview(true);
           }}
-          className="flex items-center gap-2 px-3 py-1.5 bg-indigo-50 text-indigo-700 rounded-lg hover:bg-indigo-100 transition-all text-xs font-bold"
+          className={cn("flex items-center gap-2 px-3 py-1.5 bg-indigo-50 text-indigo-700 rounded-lg hover:bg-indigo-100 transition-all text-xs font-bold", className)}
         >
           <Printer className="w-4 h-4" />
           打印预览

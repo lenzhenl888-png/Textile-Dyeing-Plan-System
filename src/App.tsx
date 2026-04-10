@@ -6,6 +6,9 @@ import DyeingPlanForm from './components/DyeingPlanForm';
 import FabricManager from './components/FabricManager';
 import OrderProgressTable from './components/OrderProgressTable';
 import Calculator from './components/Calculator';
+import ReminderList from './components/ReminderList';
+import ReminderForm from './components/ReminderForm';
+import ContactManager from './components/ContactManager';
 import Login from './components/Login';
 import { AuthProvider, useAuth } from './contexts/AuthContext';
 
@@ -37,7 +40,11 @@ function AppRoutes() {
           <Route path="/view-plan/:id" element={<DyeingPlanForm readOnly />} />
           <Route path="/progress" element={<OrderProgressTable />} />
           <Route path="/fabrics" element={<FabricManager />} />
+          <Route path="/contacts" element={<ContactManager />} />
           <Route path="/calculator" element={<Calculator />} />
+          <Route path="/reminders" element={<ReminderList />} />
+          <Route path="/reminders/new" element={<ReminderForm />} />
+          <Route path="/reminders/edit/:id" element={<ReminderForm />} />
           <Route path="*" element={<Navigate to="/" replace />} />
         </Routes>
       </Layout>

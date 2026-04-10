@@ -1,6 +1,6 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { Search, FileDown, Edit2, Trash2, FileText, Calendar, Package, User, CheckCircle2, AlertTriangle } from 'lucide-react';
+import { Search, FileDown, Edit2, Trash2, FileText, Calendar, Package, User, CheckCircle2, AlertTriangle, Clock, X } from 'lucide-react';
 import { storage, DyeingPlan } from '../services/storage';
 import { format, differenceInDays, parseISO } from 'date-fns';
 import { motion, AnimatePresence } from 'motion/react';
@@ -15,6 +15,7 @@ export default function DyeingPlanList() {
   const [selectedMonth, setSelectedMonth] = useState<string>('all');
   const [loading, setLoading] = useState(true);
   const [deleteConfirmId, setDeleteConfirmId] = useState<string | null>(null);
+  const [selectedPlan, setSelectedPlan] = useState<DyeingPlan | null>(null);
 
   useEffect(() => {
     loadPlans();
@@ -30,6 +31,7 @@ export default function DyeingPlanList() {
     await storage.deletePlan(id);
     loadPlans();
     setDeleteConfirmId(null);
+    setSelectedPlan(null);
   };
 
   // Get unique months from plans for the filter
@@ -187,7 +189,7 @@ export default function DyeingPlanList() {
                         initial={{ opacity: 0, scale: 0.95 }}
                         animate={{ opacity: 1, scale: 1 }}
                         transition={{ delay: index * 0.05 }}
-                        onClick={() => navigate(`/view-plan/${plan.id}`)}
+                        onClick={() => setSelectedPlan(plan)}
                         className={cn(
                           "bg-white rounded-xl border shadow-sm hover:shadow-md transition-all group relative overflow-hidden cursor-pointer",
                           isCompleted 
@@ -225,18 +227,19 @@ export default function DyeingPlanList() {
                                 </div>
                               )}
                               <button
-                              onClick={() => navigate(`/edit-plan/${plan.id}`)}
-                              className="p-2 text-gray-400 hover:text-indigo-600 hover:bg-indigo-50 rounded-lg transition-all"
-                            >
-                              <Edit2 className="w-4 h-4" />
-                            </button>
-                            <DyeingPlanPrint plan={plan} />
-                            <button
-                              onClick={() => setDeleteConfirmId(plan.id)}
-                              className="p-2 text-gray-400 hover:text-red-600 hover:bg-red-50 rounded-lg transition-all"
-                            >
-                              <Trash2 className="w-4 h-4" />
-                            </button>
+                                onClick={() => navigate(`/edit-plan/${plan.id}`)}
+                                className="p-2 text-gray-400 hover:text-indigo-600 hover:bg-indigo-50 rounded-lg transition-all"
+                              >
+                                <Edit2 className="w-4 h-4" />
+                              </button>
+                              <DyeingPlanPrint plan={plan} />
+                              <button
+                                onClick={() => setDeleteConfirmId(plan.id)}
+                                className="p-2 text-gray-400 hover:text-red-600 hover:bg-red-50 rounded-lg transition-all"
+                              >
+                                <Trash2 className="w-4 h-4" />
+                              </button>
+                            </div>
                           </div>
                         </div>
 
@@ -261,16 +264,125 @@ export default function DyeingPlanList() {
                             {plan.rows.length} 种颜色
                           </div>
                         </div>
-                      </div>
-                    </motion.div>
-                  );
-                })}
+                      </motion.div>
+                    );
+                  })}
                 </div>
               </motion.div>
             ))
           )}
         </AnimatePresence>
       </div>
+
+      {/* Details Modal */}
+      <AnimatePresence>
+        {selectedPlan && (
+          <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/50 backdrop-blur-sm" onClick={() => setSelectedPlan(null)}>
+            <motion.div
+              initial={{ opacity: 0, scale: 0.95, y: 20 }}
+              animate={{ opacity: 1, scale: 1, y: 0 }}
+              exit={{ opacity: 0, scale: 0.95, y: 20 }}
+              onClick={(e) => e.stopPropagation()}
+              className="bg-white rounded-2xl shadow-xl w-full max-w-md overflow-hidden flex flex-col max-h-[90vh]"
+            >
+              <div className="p-4 border-b border-gray-100 flex justify-between items-center bg-gray-50">
+                <h3 className="text-lg font-bold text-gray-900 flex items-center gap-2">
+                  <FileText className="w-5 h-5 text-indigo-600" />
+                  计划单概览
+                </h3>
+                <button onClick={() => setSelectedPlan(null)} className="p-1.5 text-gray-400 hover:text-gray-600 rounded-lg hover:bg-gray-200">
+                  <X className="w-5 h-5" />
+                </button>
+              </div>
+              
+              <div className="p-5 overflow-y-auto space-y-4">
+                <div>
+                  <div className="text-xs text-gray-500 mb-1">客户</div>
+                  <div className="text-base font-bold text-gray-900">{selectedPlan.customer || '-'}</div>
+                </div>
+
+                <div className="grid grid-cols-2 gap-4">
+                  <div>
+                    <div className="text-xs text-gray-500 mb-1">合同号</div>
+                    <div className="text-sm font-medium text-gray-900">{selectedPlan.contractNumber || '-'}</div>
+                  </div>
+                  <div>
+                    <div className="text-xs text-gray-500 mb-1">款号</div>
+                    <div className="text-sm font-medium text-gray-900">{selectedPlan.styleNumber || '-'}</div>
+                  </div>
+                </div>
+
+                <div className="grid grid-cols-2 gap-4">
+                  <div>
+                    <div className="text-xs text-gray-500 mb-1">制单日期</div>
+                    <div className="text-sm text-gray-900 flex items-center gap-1.5">
+                      <Calendar className="w-4 h-4 text-gray-400" />
+                      {selectedPlan.date || '-'}
+                    </div>
+                  </div>
+                  <div>
+                    <div className="text-xs text-gray-500 mb-1">交期</div>
+                    <div className="text-sm text-gray-900 flex items-center gap-1.5">
+                      <Clock className="w-4 h-4 text-gray-400" />
+                      {selectedPlan.deliveryDate || '-'}
+                    </div>
+                  </div>
+                </div>
+
+                <div>
+                  <div className="text-xs text-gray-500 mb-2">面料信息</div>
+                  <div className="space-y-2">
+                    {selectedPlan.fabrics.map((f, i) => f.itemNumber && (
+                      <div key={i} className="bg-gray-50 p-2 rounded-lg border border-gray-100 text-sm">
+                        <span className="font-bold text-gray-700 mr-2">面料 {i+1}:</span>
+                        {f.itemNumber}
+                      </div>
+                    ))}
+                  </div>
+                </div>
+
+                <div>
+                  <div className="text-xs text-gray-500 mb-2">颜色及数量 ({selectedPlan.rows.length} 行)</div>
+                  <div className="bg-gray-50 rounded-lg border border-gray-100 overflow-hidden">
+                    <div className="max-h-32 overflow-y-auto p-2 space-y-1">
+                      {selectedPlan.rows.map((row, i) => (
+                        <div key={i} className="flex justify-between text-sm py-1 border-b border-gray-100 last:border-0">
+                          <span className="text-gray-700">{row.colorName || '未命名颜色'}</span>
+                          <span className="font-medium text-gray-900">
+                            {row.quantities.reduce((sum, q) => sum + (parseFloat(q as string) || 0), 0)}
+                          </span>
+                        </div>
+                      ))}
+                    </div>
+                  </div>
+                </div>
+              </div>
+
+              <div className="p-4 border-t border-gray-100 bg-gray-50 flex flex-col gap-2">
+                <button
+                  onClick={() => navigate(`/view-plan/${selectedPlan.id}`)}
+                  className="w-full flex items-center justify-center gap-2 px-4 py-2.5 bg-indigo-600 text-white font-bold rounded-lg hover:bg-indigo-700 transition-colors shadow-sm"
+                >
+                  <FileText className="w-4 h-4" />
+                  查看完整计划单
+                </button>
+                <div className="flex gap-2">
+                  <button
+                    onClick={() => navigate(`/edit-plan/${selectedPlan.id}`)}
+                    className="flex-1 flex items-center justify-center gap-1.5 px-3 py-2 text-sm font-medium text-indigo-600 bg-indigo-50 hover:bg-indigo-100 rounded-lg transition-colors"
+                  >
+                    <Edit2 className="w-4 h-4" />
+                    编辑
+                  </button>
+                  <div className="flex-1">
+                    <DyeingPlanPrint plan={selectedPlan} variant="button" className="w-full justify-center" />
+                  </div>
+                </div>
+              </div>
+            </motion.div>
+          </div>
+        )}
+      </AnimatePresence>
 
       {/* Delete Confirmation Modal */}
       <AnimatePresence>

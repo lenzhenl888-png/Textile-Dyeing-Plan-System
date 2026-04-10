@@ -20,5 +20,15 @@ service cloud.firestore {
     match /fabrics/{fabricId} {
       allow read, write: if isAuthorized();
     }
+
+    // Allow read and write access to the 'reminders' collection only if the user is authorized
+    match /reminders/{reminderId} {
+      allow read, write: if isAuthorized();
+    }
+
+    // Allow read and write access to the 'contacts' collection only if the user is authorized
+    match /contacts/{contactId} {
+      allow read, write: if isAuthorized();
+    }
   }
 }
