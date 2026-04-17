@@ -4,30 +4,34 @@ service cloud.firestore {
   match /databases/{database}/documents {
     // Helper function to check if the user is authorized via email whitelist
     function isAuthorized() {
-      return request.auth != null && 
-             request.auth.token.email in [
-               'len.zhenl888@gmail.com',
-               'lz1041953343@gmail.com'
-             ];
+      return request.auth != null && (
+        request.auth.token.email == 'len.zhenl888@gmail.com' ||
+        request.auth.token.email == 'lz1041953343@gmail.com'
+      );
     }
 
-    // Allow read and write access to the 'plans' collection only if the user is authorized
-    match /plans/{planId} {
+    // Allow read and write access to the 'plans' collection tracking
+    match /plans/{document=**} {
       allow read, write: if isAuthorized();
     }
 
-    // Allow read and write access to the 'fabrics' collection only if the user is authorized
-    match /fabrics/{fabricId} {
+    // Allow read and write access to the 'fabrics' collection
+    match /fabrics/{document=**} {
       allow read, write: if isAuthorized();
     }
 
-    // Allow read and write access to the 'reminders' collection only if the user is authorized
-    match /reminders/{reminderId} {
+    // Allow read and write access to the 'reminders' collection
+    match /reminders/{document=**} {
       allow read, write: if isAuthorized();
     }
 
-    // Allow read and write access to the 'contacts' collection only if the user is authorized
-    match /contacts/{contactId} {
+    // Allow read and write access to the 'contacts' collection
+    match /contacts/{document=**} {
+      allow read, write: if isAuthorized();
+    }
+
+    // Allow read and write access to the 'customers' collection
+    match /customers/{document=**} {
       allow read, write: if isAuthorized();
     }
   }

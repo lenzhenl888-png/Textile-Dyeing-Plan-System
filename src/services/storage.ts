@@ -1,6 +1,57 @@
 import { v4 as uuidv4 } from 'uuid';
-import { db } from '../lib/firebase';
+import { db, auth } from '../lib/firebase';
 import { collection, getDocs, doc, setDoc, deleteDoc, getDoc } from 'firebase/firestore';
+
+export enum OperationType {
+  CREATE = 'create',
+  UPDATE = 'update',
+  DELETE = 'delete',
+  LIST = 'list',
+  GET = 'get',
+  WRITE = 'write',
+}
+
+export interface FirestoreErrorInfo {
+  error: string;
+  operationType: OperationType;
+  path: string | null;
+  authInfo: {
+    userId?: string;
+    email?: string | null;
+    emailVerified?: boolean;
+    isAnonymous?: boolean;
+    tenantId?: string | null;
+    providerInfo: {
+      providerId: string;
+      displayName: string | null;
+      email: string | null;
+      photoUrl: string | null;
+    }[];
+  }
+}
+
+export function handleFirestoreError(error: unknown, operationType: OperationType, path: string | null) {
+  const errInfo: FirestoreErrorInfo = {
+    error: error instanceof Error ? error.message : String(error),
+    authInfo: {
+      userId: auth.currentUser?.uid,
+      email: auth.currentUser?.email,
+      emailVerified: auth.currentUser?.emailVerified,
+      isAnonymous: auth.currentUser?.isAnonymous,
+      tenantId: auth.currentUser?.tenantId,
+      providerInfo: auth.currentUser?.providerData.map(provider => ({
+        providerId: provider.providerId,
+        displayName: provider.displayName,
+        email: provider.email,
+        photoUrl: provider.photoURL
+      })) || []
+    },
+    operationType,
+    path
+  };
+  console.error('Firestore Error: ', JSON.stringify(errInfo));
+  throw new Error(JSON.stringify(errInfo));
+}
 
 export interface Fabric {
   id: string;
@@ -74,11 +125,57 @@ export interface Contact {
   updatedAt: string;
 }
 
+export interface Customer {
+  id: string;
+  name: string;
+  code: string;
+  createdAt: string;
+  updatedAt: string;
+}
+
 export const storage = {
+  // Customers
+  getCustomers: async (): Promise<Customer[]> => {
+    try {
+      const snapshot = await getDocs(collection(db, 'customers'));
+      return snapshot.docs.map(doc => doc.data() as Customer);
+    } catch (error) {
+      handleFirestoreError(error, OperationType.LIST, 'customers');
+      return [];
+    }
+  },
+  saveCustomer: async (customer: any): Promise<Customer> => {
+    const newCustomer = {
+      ...customer,
+      id: customer.id || uuidv4(),
+      createdAt: customer.createdAt || new Date().toISOString(),
+      updatedAt: new Date().toISOString(),
+    } as Customer;
+    try {
+      await setDoc(doc(db, 'customers', newCustomer.id), newCustomer);
+      return newCustomer;
+    } catch (error) {
+      handleFirestoreError(error, OperationType.WRITE, 'customers');
+      throw error;
+    }
+  },
+  deleteCustomer: async (id: string): Promise<void> => {
+    try {
+      await deleteDoc(doc(db, 'customers', id));
+    } catch (error) {
+      handleFirestoreError(error, OperationType.DELETE, 'customers');
+    }
+  },
+
   // Contacts
   getContacts: async (): Promise<Contact[]> => {
-    const snapshot = await getDocs(collection(db, 'contacts'));
-    return snapshot.docs.map(doc => doc.data() as Contact);
+    try {
+      const snapshot = await getDocs(collection(db, 'contacts'));
+      return snapshot.docs.map(doc => doc.data() as Contact);
+    } catch (error) {
+      handleFirestoreError(error, OperationType.LIST, 'contacts');
+      return [];
+    }
   },
   saveContact: async (contact: any): Promise<Contact> => {
     const newContact = {
@@ -87,42 +184,75 @@ export const storage = {
       createdAt: contact.createdAt || new Date().toISOString(),
       updatedAt: new Date().toISOString(),
     } as Contact;
-    await setDoc(doc(db, 'contacts', newContact.id), newContact);
-    return newContact;
+    try {
+      await setDoc(doc(db, 'contacts', newContact.id), newContact);
+      return newContact;
+    } catch (error) {
+      handleFirestoreError(error, OperationType.WRITE, 'contacts');
+      throw error;
+    }
   },
   deleteContact: async (id: string): Promise<void> => {
-    await deleteDoc(doc(db, 'contacts', id));
+    try {
+      await deleteDoc(doc(db, 'contacts', id));
+    } catch (error) {
+      handleFirestoreError(error, OperationType.DELETE, 'contacts');
+    }
   },
 
   // Fabrics
   getFabrics: async (): Promise<Fabric[]> => {
-    const snapshot = await getDocs(collection(db, 'fabrics'));
-    return snapshot.docs.map(doc => doc.data() as Fabric);
+    try {
+      const snapshot = await getDocs(collection(db, 'fabrics'));
+      return snapshot.docs.map(doc => doc.data() as Fabric);
+    } catch (error) {
+      handleFirestoreError(error, OperationType.LIST, 'fabrics');
+      return [];
+    }
   },
   saveFabric: async (fabric: Omit<Fabric, 'id'> & { id?: string }): Promise<Fabric> => {
     const newFabric = {
       ...fabric,
       id: fabric.id || uuidv4(),
     } as Fabric;
-    await setDoc(doc(db, 'fabrics', newFabric.id), newFabric);
-    return newFabric;
+    try {
+      await setDoc(doc(db, 'fabrics', newFabric.id), newFabric);
+      return newFabric;
+    } catch (error) {
+      handleFirestoreError(error, OperationType.WRITE, 'fabrics');
+      throw error;
+    }
   },
   deleteFabric: async (id: string): Promise<void> => {
-    await deleteDoc(doc(db, 'fabrics', id));
+    try {
+      await deleteDoc(doc(db, 'fabrics', id));
+    } catch (error) {
+      handleFirestoreError(error, OperationType.DELETE, 'fabrics');
+    }
   },
 
   // Dyeing Plans
   getPlans: async (): Promise<DyeingPlan[]> => {
-    const snapshot = await getDocs(collection(db, 'plans'));
-    return snapshot.docs.map(doc => doc.data() as DyeingPlan);
+    try {
+      const snapshot = await getDocs(collection(db, 'plans'));
+      return snapshot.docs.map(doc => doc.data() as DyeingPlan);
+    } catch (error) {
+      handleFirestoreError(error, OperationType.LIST, 'plans');
+      return [];
+    }
   },
   getPlan: async (id: string): Promise<DyeingPlan | undefined> => {
-    const docRef = doc(db, 'plans', id);
-    const snapshot = await getDoc(docRef);
-    if (snapshot.exists()) {
-      return snapshot.data() as DyeingPlan;
+    try {
+      const docRef = doc(db, 'plans', id);
+      const snapshot = await getDoc(docRef);
+      if (snapshot.exists()) {
+        return snapshot.data() as DyeingPlan;
+      }
+      return undefined;
+    } catch (error) {
+      handleFirestoreError(error, OperationType.GET, `plans/${id}`);
+      return undefined;
     }
-    return undefined;
   },
   savePlan: async (plan: any): Promise<DyeingPlan> => {
     const newPlan = {
@@ -131,25 +261,44 @@ export const storage = {
       createdAt: plan.createdAt || new Date().toISOString(),
       updatedAt: new Date().toISOString(),
     } as DyeingPlan;
-    await setDoc(doc(db, 'plans', newPlan.id), newPlan);
-    return newPlan;
+    try {
+      await setDoc(doc(db, 'plans', newPlan.id), newPlan);
+      return newPlan;
+    } catch (error) {
+      handleFirestoreError(error, OperationType.WRITE, 'plans');
+      throw error;
+    }
   },
   deletePlan: async (id: string): Promise<void> => {
-    await deleteDoc(doc(db, 'plans', id));
+    try {
+      await deleteDoc(doc(db, 'plans', id));
+    } catch (error) {
+      handleFirestoreError(error, OperationType.DELETE, `plans/${id}`);
+    }
   },
 
   // Reminders
   getReminders: async (): Promise<Reminder[]> => {
-    const snapshot = await getDocs(collection(db, 'reminders'));
-    return snapshot.docs.map(doc => doc.data() as Reminder);
+    try {
+      const snapshot = await getDocs(collection(db, 'reminders'));
+      return snapshot.docs.map(doc => doc.data() as Reminder);
+    } catch (error) {
+      handleFirestoreError(error, OperationType.LIST, 'reminders');
+      return [];
+    }
   },
   getReminder: async (id: string): Promise<Reminder | undefined> => {
-    const docRef = doc(db, 'reminders', id);
-    const snapshot = await getDoc(docRef);
-    if (snapshot.exists()) {
-      return snapshot.data() as Reminder;
+    try {
+      const docRef = doc(db, 'reminders', id);
+      const snapshot = await getDoc(docRef);
+      if (snapshot.exists()) {
+        return snapshot.data() as Reminder;
+      }
+      return undefined;
+    } catch (error) {
+      handleFirestoreError(error, OperationType.GET, `reminders/${id}`);
+      return undefined;
     }
-    return undefined;
   },
   saveReminder: async (reminder: any): Promise<Reminder> => {
     const newReminder = {
@@ -158,10 +307,19 @@ export const storage = {
       createdAt: reminder.createdAt || new Date().toISOString(),
       updatedAt: new Date().toISOString(),
     } as Reminder;
-    await setDoc(doc(db, 'reminders', newReminder.id), newReminder);
-    return newReminder;
+    try {
+      await setDoc(doc(db, 'reminders', newReminder.id), newReminder);
+      return newReminder;
+    } catch (error) {
+      handleFirestoreError(error, OperationType.WRITE, 'reminders');
+      throw error;
+    }
   },
   deleteReminder: async (id: string): Promise<void> => {
-    await deleteDoc(doc(db, 'reminders', id));
+    try {
+      await deleteDoc(doc(db, 'reminders', id));
+    } catch (error) {
+      handleFirestoreError(error, OperationType.DELETE, `reminders/${id}`);
+    }
   }
 };
