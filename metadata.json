@@ -1,5 +1,6 @@
 {
-  "name": "Remix: Textile Dyeing Plan Manager",
+  "name": "Textile Dyeing Plan Manager",
   "description": "A comprehensive tool for creating, managing, and exporting textile dyeing plans with a master fabric database.",
-  "requestFramePermissions": []
+  "requestFramePermissions": [],
+  "majorCapabilities": []
 }
