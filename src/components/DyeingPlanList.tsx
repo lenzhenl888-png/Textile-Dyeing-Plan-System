@@ -13,6 +13,7 @@ export default function DyeingPlanList() {
   const [searchTerm, setSearchTerm] = useState('');
   const [contractSearchTerm, setContractSearchTerm] = useState('');
   const [selectedMonth, setSelectedMonth] = useState<string>('all');
+  const [showCompleted, setShowCompleted] = useState(false);
   const [loading, setLoading] = useState(true);
   const [deleteConfirmId, setDeleteConfirmId] = useState<string | null>(null);
   const [selectedPlan, setSelectedPlan] = useState<DyeingPlan | null>(null);
@@ -43,6 +44,11 @@ export default function DyeingPlanList() {
   }).filter(Boolean))) as string[]).sort((a, b) => b.localeCompare(a));
 
   const filteredPlans = plans.filter(plan => {
+    const isCompleted = !!plan.progress?.['完成'];
+    if (!showCompleted && isCompleted) {
+      return false;
+    }
+
     const search = searchTerm.toLowerCase();
     const contractSearch = contractSearchTerm.toLowerCase();
     
@@ -131,6 +137,18 @@ export default function DyeingPlanList() {
               })}
             </select>
           </div>
+          <button
+            onClick={() => setShowCompleted(!showCompleted)}
+            className={cn(
+              "flex items-center justify-center gap-2 px-4 py-2 rounded-lg transition-all text-sm font-medium whitespace-nowrap border",
+              showCompleted 
+                ? "bg-indigo-50 text-indigo-700 border-indigo-200 hover:bg-indigo-100" 
+                : "bg-white text-gray-600 border-gray-200 hover:bg-gray-50"
+            )}
+          >
+            <CheckCircle2 className={cn("w-4 h-4", showCompleted ? "text-indigo-600" : "text-gray-400")} />
+            {showCompleted ? '隐藏已完成' : '显示已完成'}
+          </button>
         </div>
       </div>
 
