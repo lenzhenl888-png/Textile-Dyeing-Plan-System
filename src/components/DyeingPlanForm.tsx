@@ -4,6 +4,7 @@ import { Save, ArrowLeft, AlertCircle, Plus, Trash2, Eraser, X } from 'lucide-re
 import { storage, DyeingPlan, FabricDetail, ColorRow, Fabric, Customer } from '../services/storage';
 import { cn } from '../lib/utils';
 import { v4 as uuidv4 } from 'uuid';
+import { CustomerManagerDialog } from './CustomerManagerDialog';
 
 const DRAFT_KEY = 'dyeing_plan_form_draft';
 
@@ -35,8 +36,6 @@ export default function DyeingPlanForm({ readOnly = false }: { readOnly?: boolea
   // Customer modal state
   const [dbCustomers, setDbCustomers] = useState<Customer[]>([]);
   const [showAddCustomer, setShowAddCustomer] = useState(false);
-  const [newCustomer, setNewCustomer] = useState({ name: '', code: '' });
-  const [savingCustomer, setSavingCustomer] = useState(false);
 
   const [formData, setFormData] = useState<Partial<DyeingPlan>>({
     customer: '',
@@ -299,10 +298,15 @@ export default function DyeingPlanForm({ readOnly = false }: { readOnly?: boolea
                           required
                         >
                           <option value="" disabled>选择客户</option>
-                          {dbCustomers.map(c => (
-                            <option key={c.id} value={c.name}>{c.name}</option>
-                          ))}
-                          {formData.customer && !dbCustomers.some(c => c.name === formData.customer) && (
+                          {dbCustomers.map(c => {
+                            const displayValue = c.code ? c.code : c.name;
+                            return (
+                              <option key={c.id || c.name} value={displayValue}>
+                                {displayValue}
+                              </option>
+                            );
+                          })}
+                          {formData.customer && !dbCustomers.some(c => (c.code ? c.code : c.name) === formData.customer) && (
                             <option value={formData.customer}>{formData.customer}</option>
                           )}
                         </select>
@@ -570,65 +574,13 @@ export default function DyeingPlanForm({ readOnly = false }: { readOnly?: boolea
       </form>
 
       {/* Add Customer Modal */}
-      {showAddCustomer && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/50 backdrop-blur-sm">
-          <div className="bg-white rounded-2xl shadow-xl w-full max-w-md overflow-hidden animate-in zoom-in-95 duration-200">
-            <div className="flex items-center justify-between p-4 border-b border-gray-100 bg-gray-50">
-              <h3 className="text-lg font-bold text-gray-900">添加新客户</h3>
-              <button 
-                onClick={() => setShowAddCustomer(false)}
-                className="p-1 text-gray-400 hover:text-gray-600 rounded-lg transition-colors"
-              >
-                <X className="w-5 h-5" />
-              </button>
-            </div>
-            
-            <form onSubmit={handleSaveCustomer} className="p-6 space-y-4">
-              <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1">客户名称 / 编号 <span className="text-red-500">*</span></label>
-                <input
-                  autoFocus
-                  type="text"
-                  required
-                  value={newCustomer.name}
-                  onChange={e => setNewCustomer({ ...newCustomer, name: e.target.value })}
-                  placeholder="例如: JM006"
-                  className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500 outline-none"
-                />
-              </div>
-              <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1">备注 (选填)</label>
-                <textarea
-                  value={newCustomer.code}
-                  onChange={e => setNewCustomer({ ...newCustomer, code: e.target.value })}
-                  className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500 outline-none resize-none h-20"
-                  placeholder="客户的联系方式或其他信息..."
-                />
-              </div>
-
-              <div className="flex justify-end gap-3 mt-6 pt-4 border-t border-gray-100">
-                <button
-                  type="button"
-                  onClick={() => setShowAddCustomer(false)}
-                  className="px-4 py-2 text-sm font-medium text-gray-700 bg-gray-100 hover:bg-gray-200 rounded-lg transition-colors"
-                >
-                  取消
-                </button>
-                <button
-                  type="submit"
-                  disabled={savingCustomer || !newCustomer.name}
-                  className={cn(
-                    "px-6 py-2 text-sm font-bold text-white bg-indigo-600 rounded-lg hover:bg-indigo-700 transition-colors shadow-sm",
-                    (savingCustomer || !newCustomer.name) && "opacity-50 cursor-not-allowed"
-                  )}
-                >
-                  {savingCustomer ? '保存中...' : '确认添加'}
-                </button>
-              </div>
-            </form>
-          </div>
-        </div>
-      )}
+      <CustomerManagerDialog
+        isOpen={showAddCustomer}
+        onClose={() => setShowAddCustomer(false)}
+        customers={dbCustomers}
+        onCustomersChange={setDbCustomers}
+        onSelectCustomer={(customerName) => setFormData({ ...formData, customer: customerName })}
+      />
     </div>
   );
 }

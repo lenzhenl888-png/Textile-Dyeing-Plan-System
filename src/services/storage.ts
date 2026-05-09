@@ -138,7 +138,7 @@ export const storage = {
   getCustomers: async (): Promise<Customer[]> => {
     try {
       const snapshot = await getDocs(collection(db, 'customers'));
-      return snapshot.docs.map(doc => doc.data() as Customer);
+      return snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() } as Customer));
     } catch (error) {
       handleFirestoreError(error, OperationType.LIST, 'customers');
       return [];
