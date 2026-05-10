@@ -208,7 +208,7 @@ export default function DyeingPlanForm({ readOnly = false }: { readOnly?: boolea
       await storage.savePlan(formData);
       const draftKey = id ? `${DRAFT_KEY}_${id}` : DRAFT_KEY;
       localStorage.removeItem(draftKey);
-      navigate('/');
+      navigate('/plans');
     } catch (err) {
       console.error("Error saving plan:", err);
       setError('保存失败，请重试');
@@ -224,7 +224,7 @@ export default function DyeingPlanForm({ readOnly = false }: { readOnly?: boolea
       <div className="flex items-center justify-between">
         <div className="flex items-center gap-4">
           <button
-            onClick={() => navigate('/')}
+            onClick={() => navigate('/plans')}
             className="p-2 text-gray-400 hover:text-gray-600 hover:bg-gray-100 rounded-full transition-all"
           >
             <ArrowLeft className="w-5 h-5" />
@@ -552,7 +552,7 @@ export default function DyeingPlanForm({ readOnly = false }: { readOnly?: boolea
         <div className="flex justify-end gap-4">
           <button
             type="button"
-            onClick={() => navigate('/')}
+            onClick={() => navigate('/plans')}
             className="px-6 py-2.5 text-sm font-semibold text-gray-700 bg-white border border-gray-300 rounded-lg hover:bg-gray-50 transition-all"
           >
             {readOnly ? '返回' : '取消'}

@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { useNavigate, useParams } from 'react-router-dom';
+import { useNavigate, useParams, useSearchParams } from 'react-router-dom';
 import { Save, ArrowLeft, AlertCircle } from 'lucide-react';
 import { storage, Reminder, DyeingPlan, Contact } from '../services/storage';
 import { cn } from '../lib/utils';
@@ -7,6 +7,8 @@ import { cn } from '../lib/utils';
 export default function ReminderForm() {
   const { id } = useParams();
   const navigate = useNavigate();
+  const [searchParams] = useSearchParams();
+  const dateParam = searchParams.get('date');
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
   const [error, setError] = useState<string | null>(null);
@@ -17,8 +19,8 @@ export default function ReminderForm() {
     event: '',
     planId: '',
     planLabel: '',
-    expectedDate: new Date().toISOString().split('T')[0],
-    confirmDate: new Date().toISOString().split('T')[0],
+    expectedDate: dateParam || new Date().toISOString().split('T')[0],
+    confirmDate: dateParam || new Date().toISOString().split('T')[0],
     contact: '',
     factory: '',
     phone: '',

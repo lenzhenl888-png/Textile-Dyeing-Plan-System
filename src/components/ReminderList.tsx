@@ -1,9 +1,9 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useMemo } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { Bell, Plus, Calendar, Clock, Phone, Factory, User, CheckCircle2, AlertCircle, Edit2, Trash2, X } from 'lucide-react';
+import { Bell, Plus, Calendar as CalendarIcon, Clock, Phone, Factory, User, CheckCircle2, AlertCircle, Edit2, Trash2, X, ChevronLeft, ChevronRight } from 'lucide-react';
 import { storage, Reminder } from '../services/storage';
 import { cn } from '../lib/utils';
-import { format, isPast, isToday, parseISO } from 'date-fns';
+import { format, isPast, isToday, parseISO, startOfMonth, endOfMonth, startOfWeek, endOfWeek, eachDayOfInterval, isSameMonth, isSameDay, addMonths, subMonths, startOfToday } from 'date-fns';
 import { motion, AnimatePresence } from 'motion/react';
 
 export default function ReminderList() {
@@ -12,6 +12,9 @@ export default function ReminderList() {
   const [loading, setLoading] = useState(true);
   const [deleteConfirmId, setDeleteConfirmId] = useState<string | null>(null);
   const [selectedReminder, setSelectedReminder] = useState<Reminder | null>(null);
+
+  const [currentMonth, setCurrentMonth] = useState(startOfMonth(startOfToday()));
+  const [selectedCalendarDate, setSelectedCalendarDate] = useState<Date | null>(null);
 
   useEffect(() => {
     loadReminders();
@@ -41,7 +44,40 @@ export default function ReminderList() {
     loadReminders();
   };
 
+  const nextMonth = () => setCurrentMonth(addMonths(currentMonth, 1));
+  const prevMonth = () => setCurrentMonth(subMonths(currentMonth, 1));
+
+  const monthStart = startOfMonth(currentMonth);
+  const monthEnd = endOfMonth(monthStart);
+  const startDate = startOfWeek(monthStart);
+  const endDate = endOfWeek(monthEnd);
+
+  const calendarDays = useMemo(() => eachDayOfInterval({ start: startDate, end: endDate }), [startDate, endDate]);
+
+  const remindersByDate = useMemo(() => {
+    return reminders.reduce((acc, reminder) => {
+      // Collect dates that have reminders
+      const dates = [reminder.expectedDate, reminder.confirmDate, reminder.futureDate].filter(Boolean) as string[];
+      dates.forEach(d => {
+        if (!acc[d]) acc[d] = [];
+        // Avoid duplicates in the same date
+        if (!acc[d].find(r => r.id === reminder.id)) {
+          acc[d].push(reminder);
+        }
+      });
+      return acc;
+    }, {} as Record<string, Reminder[]>);
+  }, [reminders]);
+
+  const filteredReminders = useMemo(() => {
+    if (!selectedCalendarDate) return reminders;
+    const selectedStr = format(selectedCalendarDate, 'yyyy-MM-dd');
+    return remindersByDate[selectedStr] || [];
+  }, [reminders, selectedCalendarDate, remindersByDate]);
+
   if (loading) return <div className="flex items-center justify-center h-64 text-gray-500 italic">正在加载提醒事项...</div>;
+
+  const WEEKDAYS = ['日', '一', '二', '三', '四', '五', '六'];
 
   return (
     <div className="space-y-6 pb-20 sm:pb-6">
@@ -54,7 +90,7 @@ export default function ReminderList() {
           <p className="text-sm text-gray-500 mt-1">管理订单跟进和待办任务</p>
         </div>
         <button
-          onClick={() => navigate('/reminders/new')}
+          onClick={() => navigate(selectedCalendarDate ? `/reminders/new?date=${format(selectedCalendarDate, 'yyyy-MM-dd')}` : '/reminders/new')}
           className="hidden sm:flex items-center gap-2 px-4 py-2 bg-indigo-600 text-white rounded-lg hover:bg-indigo-700 transition-colors shadow-sm"
         >
           <Plus className="w-4 h-4" />
@@ -62,19 +98,130 @@ export default function ReminderList() {
         </button>
       </div>
 
-      <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-3">
-        <AnimatePresence mode="popLayout">
-          {reminders.length === 0 ? (
-            <motion.div 
-              initial={{ opacity: 0 }}
-              animate={{ opacity: 1 }}
-              className="col-span-full py-20 text-center bg-white rounded-xl border border-dashed border-gray-300"
+      <div className="flex flex-col lg:flex-row gap-6">
+        {/* Calendar Sidebar */}
+        <div className="lg:w-80 flex-shrink-0">
+          <div className="bg-white p-4 rounded-xl border border-gray-200 shadow-sm sticky top-6">
+            <div className="flex items-center justify-between mb-4">
+              <h3 className="font-bold text-gray-900 text-lg">
+                {format(currentMonth, 'yyyy年 MM月')}
+              </h3>
+              <div className="flex gap-1">
+                <button onClick={prevMonth} className="p-1.5 hover:bg-gray-100 rounded-md text-gray-600">
+                  <ChevronLeft className="w-5 h-5" />
+                </button>
+                <button onClick={nextMonth} className="p-1.5 hover:bg-gray-100 rounded-md text-gray-600">
+                  <ChevronRight className="w-5 h-5" />
+                </button>
+              </div>
+            </div>
+
+            <div className="grid grid-cols-7 gap-1 mb-2">
+              {WEEKDAYS.map(day => (
+                <div key={day} className="text-center text-xs font-medium text-gray-500 py-1">
+                  {day}
+                </div>
+              ))}
+            </div>
+
+            <div className="grid grid-cols-7 gap-1">
+              {calendarDays.map((day, dayIdx) => {
+                const dateStr = format(day, 'yyyy-MM-dd');
+                const hasReminders = !!remindersByDate[dateStr]?.length;
+                const hasUncompleted = remindersByDate[dateStr]?.some(r => !r.isCompleted);
+                const isSelected = selectedCalendarDate ? isSameDay(day, selectedCalendarDate) : false;
+                const isCurrentMonth = isSameMonth(day, currentMonth);
+
+                return (
+                  <button
+                    key={day.toString()}
+                    onClick={() => setSelectedCalendarDate(isSelected ? null : day)}
+                    className={cn(
+                      "aspect-square flex flex-col items-center justify-center p-1 rounded-lg text-sm relative transition-all duration-200",
+                      !isCurrentMonth && "text-gray-300",
+                      isCurrentMonth && !isSelected && "hover:bg-indigo-50 text-gray-700",
+                      isSelected && "bg-indigo-600 text-white font-bold shadow-md",
+                      hasReminders && !isSelected && "font-bold text-indigo-900 bg-indigo-50/50"
+                    )}
+                  >
+                    <span>{format(day, 'd')}</span>
+                    {hasReminders && (
+                      <div className={cn(
+                        "w-1.5 h-1.5 rounded-full mt-0.5",
+                        hasUncompleted ? (isSelected ? "bg-amber-300" : "bg-red-500") : (isSelected ? "bg-indigo-300" : "bg-emerald-500")
+                      )} />
+                    )}
+                  </button>
+                );
+              })}
+            </div>
+            
+            <div className="mt-4 pt-4 border-t border-gray-100 space-y-2">
+              <div className="flex items-center gap-2 text-xs text-gray-500">
+                <div className="w-2 h-2 rounded-full bg-red-500" /> 有未完成提醒
+              </div>
+              <div className="flex items-center gap-2 text-xs text-gray-500">
+                <div className="w-2 h-2 rounded-full bg-emerald-500" /> 全已完成
+              </div>
+            </div>
+            
+            <button
+              onClick={() => navigate(selectedCalendarDate ? `/reminders/new?date=${format(selectedCalendarDate, 'yyyy-MM-dd')}` : '/reminders/new')}
+              className="mt-6 w-full py-2.5 bg-indigo-50 hover:bg-indigo-100 text-indigo-700 font-medium rounded-lg text-sm flex items-center justify-center gap-2 transition-colors border border-indigo-100 border-dashed"
             >
-              <Bell className="w-12 h-12 text-gray-300 mx-auto mb-4" />
-              <p className="text-gray-500">暂无提醒事项</p>
-            </motion.div>
-          ) : (
-            reminders.map((reminder, index) => {
+              <Plus className="w-4 h-4" />
+              {selectedCalendarDate ? `新建 ${format(selectedCalendarDate, 'MM-dd')} 提醒` : '新建提醒事项'}
+            </button>
+          </div>
+        </div>
+
+        {/* Reminders List */}
+        <div className="flex-1">
+          <div className="flex items-center justify-between mb-4">
+            <h3 className="font-bold text-gray-800 flex items-center gap-2">
+              {selectedCalendarDate ? (
+                <>
+                  <CalendarIcon className="w-5 h-5 text-indigo-500" />
+                  {format(selectedCalendarDate, 'yyyy年MM月dd日')} 的提醒
+                  <button 
+                    onClick={() => setSelectedCalendarDate(null)}
+                    className="ml-2 px-2 py-0.5 bg-gray-100 text-gray-600 rounded text-xs hover:bg-gray-200 transition-colors"
+                  >
+                    查看全部
+                  </button>
+                </>
+              ) : (
+                "全部提醒"
+              )}
+            </h3>
+          </div>
+
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
+            <AnimatePresence mode="popLayout">
+              {filteredReminders.length === 0 ? (
+                <motion.div 
+                  initial={{ opacity: 0 }}
+                  animate={{ opacity: 1 }}
+                  className="col-span-full py-16 text-center bg-white rounded-xl border border-dashed border-gray-300"
+                >
+                  <Bell className="w-10 h-10 text-gray-300 mx-auto mb-3" />
+                  <p className="text-gray-500 text-sm">
+                    {selectedCalendarDate 
+                      ? `${format(selectedCalendarDate, 'MM月dd日')} 没有提醒事项`
+                      : "暂无提醒事项"
+                    }
+                  </p>
+                  {selectedCalendarDate && (
+                    <button
+                      onClick={() => navigate(`/reminders/new?date=${format(selectedCalendarDate, 'yyyy-MM-dd')}`)}
+                      className="mt-4 px-4 py-2 text-sm text-indigo-600 font-medium hover:bg-indigo-50 rounded-lg transition-colors border border-indigo-100"
+                    >
+                      立即添加
+                    </button>
+                  )}
+                </motion.div>
+              ) : (
+                filteredReminders.map((reminder, index) => {
               const isOverdue = !reminder.isCompleted && isPast(parseISO(reminder.confirmDate)) && !isToday(parseISO(reminder.confirmDate));
               const isDueToday = !reminder.isCompleted && isToday(parseISO(reminder.confirmDate));
               
@@ -167,10 +314,12 @@ export default function ReminderList() {
           )}
         </AnimatePresence>
       </div>
+      </div>
+    </div>
 
       {/* Mobile FAB */}
       <button
-        onClick={() => navigate('/reminders/new')}
+        onClick={() => navigate(selectedCalendarDate ? `/reminders/new?date=${format(selectedCalendarDate, 'yyyy-MM-dd')}` : '/reminders/new')}
         className="sm:hidden fixed bottom-6 right-6 w-14 h-14 bg-indigo-600 text-white rounded-full shadow-lg flex items-center justify-center hover:bg-indigo-700 active:scale-95 transition-all z-40"
       >
         <Plus className="w-6 h-6" />
@@ -216,7 +365,7 @@ export default function ReminderList() {
                   <div>
                     <div className="text-xs text-gray-500 mb-1">预计完成时间</div>
                     <div className="text-sm text-gray-900 flex items-center gap-1.5">
-                      <Calendar className="w-4 h-4 text-gray-400" />
+                      <CalendarIcon className="w-4 h-4 text-gray-400" />
                       {selectedReminder.expectedDate || '-'}
                     </div>
                   </div>
