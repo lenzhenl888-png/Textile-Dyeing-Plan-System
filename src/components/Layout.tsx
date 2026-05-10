@@ -1,6 +1,6 @@
 import React from 'react';
 import { Link, useLocation } from 'react-router-dom';
-import { LayoutDashboard, Database, PlusCircle, LogOut, User, ListTodo, Calculator, Bell, Users } from 'lucide-react';
+import { LayoutDashboard, Database, PlusCircle, LogOut, User, ListTodo, Calculator, Bell, Users, FileText } from 'lucide-react';
 import { cn } from '../lib/utils';
 import { useAuth } from '../contexts/AuthContext';
 
@@ -14,7 +14,8 @@ export default function Layout({ children, user }: LayoutProps) {
   const { logout } = useAuth();
 
   const navItems = [
-    { name: '仪表板', path: '/', icon: LayoutDashboard },
+    { name: '数据统计', path: '/', icon: LayoutDashboard },
+    { name: '计划列表', path: '/plans', icon: FileText },
     { name: '提醒事项', path: '/reminders', icon: Bell },
     { name: '新建计划', path: '/new-plan', icon: PlusCircle },
     { name: '订单进度表', path: '/progress', icon: ListTodo },

@@ -1,6 +1,7 @@
 import React from 'react';
 import { BrowserRouter as Router, Routes, Route, Navigate } from 'react-router-dom';
 import Layout from './components/Layout';
+import Dashboard from './components/Dashboard';
 import DyeingPlanList from './components/DyeingPlanList';
 import DyeingPlanForm from './components/DyeingPlanForm';
 import FabricManager from './components/FabricManager';
@@ -34,7 +35,8 @@ function AppRoutes() {
     <Router>
       <Layout user={currentUser}>
         <Routes>
-          <Route path="/" element={<DyeingPlanList />} />
+          <Route path="/" element={<Dashboard />} />
+          <Route path="/plans" element={<DyeingPlanList />} />
           <Route path="/new-plan" element={<DyeingPlanForm />} />
           <Route path="/edit-plan/:id" element={<DyeingPlanForm />} />
           <Route path="/view-plan/:id" element={<DyeingPlanForm readOnly />} />
