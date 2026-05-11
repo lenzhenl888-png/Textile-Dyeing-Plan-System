@@ -161,6 +161,8 @@ export default function OrderProgressTable() {
                             {isExpanded ? <ChevronDown className="w-4 h-4" /> : <ChevronRight className="w-4 h-4" />}
                           </button>
                           {plan.contractNumber || '-'}
+                          {plan.orderType === '式样' && <span className="ml-1 px-1.5 py-0.5 rounded bg-amber-100 text-amber-700 text-xs font-bold">式样</span>}
+                          {plan.orderType === '大货' && <span className="ml-1 px-1.5 py-0.5 rounded bg-indigo-100 text-indigo-700 text-xs font-bold">大货</span>}
                         </div>
                       </td>
                       <td className="border-b border-r border-gray-200 p-3 text-gray-900">{plan.styleNumber || '-'}</td>

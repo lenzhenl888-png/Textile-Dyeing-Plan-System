@@ -89,7 +89,7 @@ export default function DyeingPlanPrint({ plan, variant = 'icon', className }: D
 
     // Row 0
     wsData.push([
-      createCell('臻林面料染色计划单', titleStyle),
+      createCell(`臻林面料染色计划单${plan.orderType ? ` - ${plan.orderType}` : ''}`, titleStyle),
       emptyCell(), emptyCell(), emptyCell(), emptyCell(), emptyCell(), emptyCell(), emptyCell()
     ]);
     
@@ -173,6 +173,17 @@ export default function DyeingPlanPrint({ plan, variant = 'icon', className }: D
       createCell(calculateRowTotal(plan, 4), boldStyle)
     ]);
     
+    // Factory Row
+    let factoryRowIdx = -1;
+    if (plan.weavingFactory || plan.dyeingFactory) {
+      factoryRowIdx = wsData.length;
+      wsData.push([
+        createCell('委外加工厂：', baseStyle),
+        createCell(`织造厂：${plan.weavingFactory || ''}   染色厂：${plan.dyeingFactory || ''}`, { ...baseStyle, alignment: { horizontal: 'left' } }),
+        emptyCell(), emptyCell(), emptyCell(), emptyCell(), emptyCell(), emptyCell()
+      ]);
+    }
+    
     // Notes Row
     const notesRowIdx = wsData.length;
     const notesStyle = { ...baseStyle, alignment: { vertical: 'top', horizontal: 'left', wrapText: true } };
@@ -197,6 +208,7 @@ export default function DyeingPlanPrint({ plan, variant = 'icon', className }: D
       { s: { r: 3, c: 0 }, e: { r: 5, c: 0 } }, // Process Label
       { s: { r: 3, c: 1 }, e: { r: 5, c: 1 } }, // Process Value
       { s: { r: totalRowIdx, c: 0 }, e: { r: totalRowIdx, c: 1 } }, // Total Label
+      ...(factoryRowIdx > -1 ? [{ s: { r: factoryRowIdx, c: 1 }, e: { r: factoryRowIdx, c: 7 } }] : []),
       { s: { r: notesRowIdx, c: 1 }, e: { r: notesRowIdx, c: 7 } }, // Notes Value
     ];
     
@@ -318,7 +330,14 @@ export default function DyeingPlanPrint({ plan, variant = 'icon', className }: D
                 <div className="mx-auto shadow-2xl origin-top scale-[0.85] sm:scale-100">
                   <div ref={pdfRef} className="w-[210mm] bg-white p-10 text-black font-sans leading-tight mx-auto">
                     <div className="border-[1.5px] border-black">
-                      <h1 className="text-2xl font-bold text-center py-4 tracking-[0.2em]">臻林面料染色计划单</h1>
+                      <h1 className="text-2xl font-bold text-center py-4 tracking-[0.2em] relative">
+                        臻林面料染色计划单
+                        {plan.orderType && (
+                          <span className="absolute top-1/2 -translate-y-1/2 right-6 border-2 border-black rounded-lg px-3 py-1 text-lg font-bold">
+                            {plan.orderType}
+                          </span>
+                        )}
+                      </h1>
                       
                       <table className="w-full border-collapse text-[11px] text-center border-t-[1.5px] border-l-[1.5px] border-black table-fixed">
                         <colgroup><col className="w-[10%]" /><col className="w-[10%]" /><col className="w-[10%]" /><col className="w-[14%]" /><col className="w-[14%]" /><col className="w-[14%]" /><col className="w-[14%]" /><col className="w-[14%]" /></colgroup>
@@ -414,6 +433,17 @@ export default function DyeingPlanPrint({ plan, variant = 'icon', className }: D
                               </td>
                             ))}
                           </tr>
+                          {(plan.weavingFactory || plan.dyeingFactory) && (
+                            <tr>
+                              <td colSpan={8} className="p-1.5 text-left align-middle border-r-[1.5px] border-b-[1.5px] border-black">
+                                <div className="flex gap-8">
+                                  <span className="font-medium">委外加工厂：</span>
+                                  {plan.weavingFactory && <span className="ml-2">织造厂：{plan.weavingFactory}</span>}
+                                  {plan.dyeingFactory && <span className="ml-2">染色厂：{plan.dyeingFactory}</span>}
+                                </div>
+                              </td>
+                            </tr>
+                          )}
                           <tr>
                             <td colSpan={8} className="p-1.5 text-left align-top min-h-[60px] border-r-[1.5px] border-b-[1.5px] border-black">
                               <div className="flex">

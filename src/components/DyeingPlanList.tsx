@@ -226,8 +226,10 @@ export default function DyeingPlanList() {
                         <div className="p-5 space-y-4">
                           <div className="flex items-start justify-between">
                             <div className="space-y-1">
-                              <h3 className="text-lg font-bold text-gray-900 line-clamp-1">
-                                {plan.contractNumber ? `${plan.contractNumber} / ` : ''}{plan.styleNumber || '无款号'}
+                              <h3 className="text-lg font-bold text-gray-900 line-clamp-1 flex items-center flex-wrap gap-2">
+                                <span>{plan.contractNumber ? `${plan.contractNumber} / ` : ''}{plan.styleNumber || '无款号'}</span>
+                                {plan.orderType === '式样' && <span className="px-1.5 py-0.5 rounded bg-amber-100 text-amber-700 text-xs font-bold">式样</span>}
+                                {plan.orderType === '大货' && <span className="px-1.5 py-0.5 rounded bg-indigo-100 text-indigo-700 text-xs font-bold">大货</span>}
                               </h3>
                               <p className="text-xs text-gray-500 font-medium tracking-wider">{plan.date}</p>
                             </div>

@@ -92,6 +92,9 @@ export interface DyeingPlan {
   gridNotes: string[]; // Custom notes for the 4 fabric detail rows
   rows: ColorRow[]; // Array of 5 quantities corresponding to the 5 fabric columns
   unit: '米' | '公斤';
+  orderType?: '大货' | '式样';
+  weavingFactory?: string;
+  dyeingFactory?: string;
   notes: string;
   progress?: Record<string, boolean>;
   createdAt: string;

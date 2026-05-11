@@ -47,6 +47,9 @@ export default function DyeingPlanForm({ readOnly = false }: { readOnly?: boolea
     fabrics: [...INITIAL_FABRICS],
     rows: [INITIAL_ROW()],
     unit: '公斤',
+    orderType: '大货',
+    weavingFactory: '',
+    dyeingFactory: '',
     notes: '颜色对样.色牢度4级.手感按样.成品后不能有细皱纹.直条纹.布面干净注意污渍.缩水率3%以内坯布因水洗可按水洗后门幅做 .一定不能有折横.手感同样.',
   });
 
@@ -235,7 +238,33 @@ export default function DyeingPlanForm({ readOnly = false }: { readOnly?: boolea
           </div>
         </div>
         {!readOnly && (
-          <div className="flex items-center gap-2">
+          <div className="flex items-center gap-4">
+            <div className="flex items-center gap-1 bg-gray-100 p-1 rounded-lg border border-gray-200">
+              <button
+                type="button"
+                onClick={() => setFormData({ ...formData, orderType: '大货' })}
+                className={cn(
+                  "px-4 py-1.5 text-sm font-semibold rounded-md transition-all",
+                  formData.orderType === '大货' || !formData.orderType
+                    ? "bg-white text-indigo-700 shadow-sm" 
+                    : "text-gray-500 hover:text-gray-700"
+                )}
+              >
+                大货
+              </button>
+              <button
+                type="button"
+                onClick={() => setFormData({ ...formData, orderType: '式样' })}
+                className={cn(
+                  "px-4 py-1.5 text-sm font-semibold rounded-md transition-all",
+                  formData.orderType === '式样' 
+                    ? "bg-white text-indigo-700 shadow-sm" 
+                    : "text-gray-500 hover:text-gray-700"
+                )}
+              >
+                式样
+              </button>
+            </div>
             {showClearConfirm ? (
               <div className="flex items-center gap-2 animate-in fade-in zoom-in-95 duration-200">
                 <span className="text-xs text-red-600 font-bold">确定清除所有内容？</span>
@@ -517,6 +546,35 @@ export default function DyeingPlanForm({ readOnly = false }: { readOnly?: boolea
                   </td>
                 ))}
                 <td className="p-2 border-r border-b border-black align-middle"></td>
+              </tr>
+
+              {/* Outsourced Factories Row */}
+              <tr>
+                <td colSpan={9} className="p-2 text-left align-middle border-r border-b border-black">
+                  <div className="flex flex-wrap gap-8 items-center">
+                    <span className="whitespace-nowrap font-medium">委外加工厂：</span>
+                    <div className="flex items-center gap-2">
+                      <span className="text-gray-600">织造厂:</span>
+                      <input 
+                        type="text" 
+                        value={formData.weavingFactory || ''}
+                        onChange={(e) => setFormData({ ...formData, weavingFactory: e.target.value })}
+                        className="border-b border-gray-300 outline-none w-48 focus:border-indigo-500 bg-transparent px-1 placeholder-gray-300"
+                        placeholder="输入织造厂"
+                      />
+                    </div>
+                    <div className="flex items-center gap-2">
+                      <span className="text-gray-600">染色厂:</span>
+                      <input 
+                        type="text" 
+                        value={formData.dyeingFactory || ''}
+                        onChange={(e) => setFormData({ ...formData, dyeingFactory: e.target.value })}
+                        className="border-b border-gray-300 outline-none w-48 focus:border-indigo-500 bg-transparent px-1 placeholder-gray-300"
+                        placeholder="输入染色厂"
+                      />
+                    </div>
+                  </div>
+                </td>
               </tr>
 
               {/* Notes Row */}
