@@ -9,11 +9,11 @@ import { CustomerManagerDialog } from './CustomerManagerDialog';
 const DRAFT_KEY = 'dyeing_plan_form_draft';
 
 const INITIAL_FABRICS: FabricDetail[] = [
-  { type: 'main', itemNumber: '', width: '', weight: '', productName: '' },
-  { type: 'main', itemNumber: '', width: '', weight: '', productName: '' },
-  { type: 'main', itemNumber: '', width: '', weight: '', productName: '' },
-  { type: 'accessory', itemNumber: '', width: '', weight: '', productName: '' },
-  { type: 'accessory', itemNumber: '', width: '', weight: '', productName: '' },
+  { type: 'main', itemNumber: '', width: '', weight: '', unit: '公斤', productName: '' },
+  { type: 'main', itemNumber: '', width: '', weight: '', unit: '公斤', productName: '' },
+  { type: 'main', itemNumber: '', width: '', weight: '', unit: '公斤', productName: '' },
+  { type: 'accessory', itemNumber: '', width: '', weight: '', unit: '米', productName: '' },
+  { type: 'accessory', itemNumber: '', width: '', weight: '', unit: '米', productName: '' },
 ];
 
 const INITIAL_ROW = (): ColorRow => ({
@@ -401,12 +401,12 @@ export default function DyeingPlanForm({ readOnly = false }: { readOnly?: boolea
 
               {/* Row 3: 工艺, 面料编号 */}
               <tr>
-                <td rowSpan={3} className="p-2 border-r border-b border-black font-medium align-middle">工艺</td>
-                <td rowSpan={3} className="p-2 border-r border-b border-black align-middle">
+                <td rowSpan={4} className="p-2 border-r border-b border-black font-medium align-middle">工艺</td>
+                <td rowSpan={4} className="p-2 border-r border-b border-black align-middle">
                   <textarea 
                     value={formData.process}
                     onChange={(e) => setFormData({ ...formData, process: e.target.value })}
-                    className="w-full h-full min-h-[100px] outline-none bg-transparent resize-none text-center" 
+                    className="w-full h-full min-h-[100px] outline-none bg-transparent resize-none text-center leading-tight" 
                     placeholder="编辑区" 
                   />
                 </td>
@@ -456,6 +456,24 @@ export default function DyeingPlanForm({ readOnly = false }: { readOnly?: boolea
                 <td className="p-2 border-r border-b border-black align-middle"></td>
               </tr>
 
+              {/* Row 5.5: 单位 */}
+              <tr>
+                <td className="p-2 border-r border-b border-black font-medium whitespace-nowrap align-middle">单位</td>
+                {formData.fabrics?.map((fabric, i) => (
+                  <td key={i} className="p-2 border-r border-b border-black align-middle">
+                    <select 
+                      value={fabric.unit || (i < 3 ? '公斤' : '米')}
+                      onChange={(e) => handleFabricChange(i, 'unit', e.target.value)}
+                      className="w-full outline-none bg-transparent text-center text-xs"
+                    >
+                      <option value="公斤">公斤</option>
+                      <option value="米">米</option>
+                    </select>
+                  </td>
+                ))}
+                <td className="p-2 border-r border-b border-black align-middle"></td>
+              </tr>
+
               {/* Row 6: 颜色, 色号, 品名 */}
               <tr className="h-14">
                 <td className="p-2 border-r border-b border-black font-medium align-middle">颜色</td>
@@ -472,16 +490,7 @@ export default function DyeingPlanForm({ readOnly = false }: { readOnly?: boolea
                     />
                   </td>
                 ))}
-                <td className="p-2 border-r border-b border-black align-middle">
-                  <select 
-                    value={formData.unit}
-                    onChange={(e) => setFormData({ ...formData, unit: e.target.value as '米' | '公斤' })}
-                    className="w-full outline-none bg-transparent text-center text-xs"
-                  >
-                    <option value="公斤">公斤</option>
-                    <option value="米">米</option>
-                  </select>
-                </td>
+                <td className="p-2 border-r border-b border-black align-middle"></td>
               </tr>
 
               {/* Row 7+: Data Rows */}

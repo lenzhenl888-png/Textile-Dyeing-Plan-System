@@ -239,7 +239,7 @@ export default function OrderProgressTable() {
                                                   "font-medium", 
                                                   cellCompleted ? "text-gray-400 line-through" : "text-gray-900"
                                                 )}>
-                                                  {qty} {plan.unit}
+                                                  {qty} {f.unit || plan.unit || (cIdx < 3 ? '公斤' : '米')}
                                                 </span>
                                               </label>
                                             ) : (

@@ -68,6 +68,7 @@ export interface FabricDetail {
   itemNumber: string;
   width: string;
   weight: string;
+  unit?: '米' | '公斤';
   productName: string;
 }
 

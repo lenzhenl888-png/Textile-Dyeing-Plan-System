@@ -138,6 +138,16 @@ export default function DyeingPlanPrint({ plan, variant = 'icon', className }: D
       createCell(plan.fabrics[4]?.weight, baseStyle)
     ]);
     
+    // Row 5.5: Unit
+    wsData.push([
+      emptyCell(), emptyCell(), createCell('单位', baseStyle), 
+      createCell(plan.fabrics[0]?.unit || '公斤', baseStyle), 
+      createCell(plan.fabrics[1]?.unit || '公斤', baseStyle), 
+      createCell(plan.fabrics[2]?.unit || '公斤', baseStyle), 
+      createCell(plan.fabrics[3]?.unit || '米', baseStyle), 
+      createCell(plan.fabrics[4]?.unit || '米', baseStyle)
+    ]);
+    
     // Row 6
     wsData.push([
       createCell('颜色', boldStyle), createCell('色号', boldStyle), createCell('品名', boldStyle), 
@@ -205,8 +215,8 @@ export default function DyeingPlanPrint({ plan, variant = 'icon', className }: D
       { s: { r: 2, c: 1 }, e: { r: 2, c: 2 } }, // Contract
       { s: { r: 2, c: 3 }, e: { r: 2, c: 5 } }, // Main Fabric
       { s: { r: 2, c: 6 }, e: { r: 2, c: 7 } }, // Accessory
-      { s: { r: 3, c: 0 }, e: { r: 5, c: 0 } }, // Process Label
-      { s: { r: 3, c: 1 }, e: { r: 5, c: 1 } }, // Process Value
+      { s: { r: 3, c: 0 }, e: { r: 6, c: 0 } }, // Process Label
+      { s: { r: 3, c: 1 }, e: { r: 6, c: 1 } }, // Process Value
       { s: { r: totalRowIdx, c: 0 }, e: { r: totalRowIdx, c: 1 } }, // Total Label
       ...(factoryRowIdx > -1 ? [{ s: { r: factoryRowIdx, c: 1 }, e: { r: factoryRowIdx, c: 7 } }] : []),
       { s: { r: notesRowIdx, c: 1 }, e: { r: notesRowIdx, c: 7 } }, // Notes Value
@@ -365,8 +375,8 @@ export default function DyeingPlanPrint({ plan, variant = 'icon', className }: D
                             <td colSpan={2} className="p-1.5 border-r-[1.5px] border-b-[1.5px] border-black font-medium align-middle">辅料</td>
                           </tr>
                           <tr>
-                            <td rowSpan={3} className="p-1.5 border-r-[1.5px] border-b-[1.5px] border-black font-medium align-middle">工艺</td>
-                            <td rowSpan={3} className="p-1.5 border-r-[1.5px] border-b-[1.5px] border-black align-middle whitespace-pre-wrap">
+                            <td rowSpan={4} className="p-1.5 border-r-[1.5px] border-b-[1.5px] border-black font-medium align-middle">工艺</td>
+                            <td rowSpan={4} className="p-1.5 border-r-[1.5px] border-b-[1.5px] border-black align-middle whitespace-pre-wrap">
                               {plan.process}
                             </td>
                             <td className="p-1.5 border-r-[1.5px] border-b-[1.5px] border-black font-medium leading-tight whitespace-nowrap align-middle">面料编号</td>
@@ -389,6 +399,14 @@ export default function DyeingPlanPrint({ plan, variant = 'icon', className }: D
                             {plan.fabrics.map((f, i) => (
                               <td key={i} className="p-1.5 border-r-[1.5px] border-b-[1.5px] border-black align-middle">
                                 {f.weight || '-'}
+                              </td>
+                            ))}
+                          </tr>
+                          <tr>
+                            <td className="p-1.5 border-r-[1.5px] border-b-[1.5px] border-black font-medium leading-tight whitespace-nowrap align-middle">单位</td>
+                            {plan.fabrics.map((f, i) => (
+                              <td key={i} className="p-1.5 border-r-[1.5px] border-b-[1.5px] border-black align-middle">
+                                {f.unit || (i < 3 ? '公斤' : '米')}
                               </td>
                             ))}
                           </tr>

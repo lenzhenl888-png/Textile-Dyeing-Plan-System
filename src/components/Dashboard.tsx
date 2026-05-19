@@ -49,9 +49,10 @@ export default function Dashboard() {
           const isAccessoryItem = productName.trim().endsWith('带') || productName.trim().endsWith('绳');
 
           if (isMainFabric && !isAccessoryItem) {
-            if (plan.unit === '公斤') {
+            const unit = fabric?.unit || plan.unit || '公斤';
+            if (unit === '公斤') {
               totalPendingKg += val;
-            } else if (plan.unit === '米') {
+            } else if (unit === '米') {
               totalPendingMeters += val;
             }
           }
